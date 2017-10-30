@@ -7,4 +7,4 @@ set MY_AI_OUTPUT="E:\Program Files (x86)\Steam\steamapps\common\Reassembly\mods\
 :: That "%~dp0" craziness just means "this .bat file's location".
 copy /Y %~dp0\Release\*.dll %MY_AI_OUTPUT%
 copy /Y %~dp0\Release\*.pdb %MY_AI_OUTPUT%
-pause
+::pause
