@@ -42,6 +42,11 @@ typedef glm::vec2 float2;
 #include <string>
 using std::string;
 
+#ifndef vector
+#include <vector>
+using std::vector;
+#endif
+
 struct AI;
 struct AICommandConfig;
 struct Block;
@@ -148,6 +153,27 @@ struct AICommandConfig {
     bool operator!=(const AICommandConfig& o) const { return !(*this == o); }
     bool usesResources() const;
     bool isRoot() const;
+};
+
+
+// base class for targeting other blocks
+struct ATargetBase : public AIAction {
+
+    typedef std::pair<const Block*, AIMood> Target;
+
+    vector<Target> targets;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.hasWeapons; }
+
+    ATargetBase(AI* ai) : AIAction(ai, LANE_TARGET, PRI_ALWAYS) {}
+
+    virtual AIMood acceptTarget(const Block* target) const;
+
+    Target testAcceptTarget(const Block *tgt) const;
+
+    float targetDistanceMetric(float2 defPos, const Block *tgt) const;
+
+    uint findSetTarget();
 };
 
 

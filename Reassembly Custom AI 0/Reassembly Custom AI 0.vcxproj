@@ -187,6 +187,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\game\AI_modapi.h" />
+    <ClInclude Include="..\game\SerialBlock.h" />
+    <ClInclude Include="..\game\Shapes.h" />
     <ClInclude Include="..\glm\common.hpp" />
     <ClInclude Include="..\glm\exponential.hpp" />
     <ClInclude Include="..\glm\ext.hpp" />

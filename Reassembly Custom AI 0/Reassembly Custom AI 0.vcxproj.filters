@@ -99,6 +99,12 @@
     <ClInclude Include="AiModExample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\game\SerialBlock.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Shapes.h">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AiModExample.cpp">
