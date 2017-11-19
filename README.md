@@ -37,6 +37,7 @@ Files / directories
 
 - Old AI DLLs keep reappearing after builds?
 	After you rename a project, you'll have to go manually delete the DLLs that
-	Visual Studio built for you.  "Build | Clean" won't delete files if VS doesn't
-	create them (which, after a rename, it doesn't anymore).
+	Visual Studio built for you.  They're in the "Release" folder.
+	"Build | Clean" won't delete files if VS doesn't create them (which, after
+	a rename, it doesn't anymore).
 
