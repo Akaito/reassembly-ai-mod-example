@@ -26,12 +26,17 @@ Files / directories
 	OpenGL Mathematics library code.
 
 
-"It's broken" checklist
------------------------
+"It's broken"/misbehaving
+-------------------------
 
 - Are you accidentally subscribed to your own mod in Steam?
 	If you are, you'll have two copies of your mod "installed".
 	One in your user files, one in a numbered steamapps directory.
 	While it's a good idea to subscribe to your mod from another computer
 	to test it, be sure to unsubscribe again on any development machine.
+
+- Old AI DLLs keep reappearing after builds?
+	After you rename a project, you'll have to go manually delete the DLLs that
+	Visual Studio built for you.  "Build | Clean" won't delete files if VS doesn't
+	create them (which, after a rename, it doesn't anymore).
 
