@@ -16,6 +16,7 @@ How to use
 4. Build the 32-bit Release configuration of the AI mod.
 ?. ((lua file editing; should we give a template in the AI mod repo?))
 ?. ((Edit "%USERPROFILE%/Saved Games/Reassembly/mods/index.lua"))
+	Is index.lua used?
 
 
 Files / directories
