@@ -49,6 +49,11 @@ if not exist "%MY_MOD_OUTPUT:"=%\factions.lua" (
 if not exist "%MY_MOD_OUTPUT:"=%\regions.lua" (
     robocopy "%~dp0default-assets" %MY_MOD_OUTPUT% regions.lua /FP
 )
+:: Since ships could be renamed to anything, only provide default ships if folder isn't present.
+:: Even if folder is empty, no default ships will be copied to output location.
+if not exist "%MY_MOD_OUTPUT:"=%\ships" (
+    robocopy "%~dp0default-assets\ships" "%MY_MOD_OUTPUT:"=%\ships" *.lua /FP
+)
 exit /B 1
 
 ::pause
