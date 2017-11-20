@@ -1,7 +1,7 @@
 :: If post-build.bat is failing from Visual Studio and you can't tell
 ::   why, un-comment-out the "pause" at the end of this script and run
 ::   it manually, so you can see what it's trying to do and failing on.
-:: TL;DR: This script "just" copies some files from the local default-assets and build output to
+:: TL;DR: This script "just" copies some files from the local mod-assets and build output to
 ::   your mod's files.  The crazy syntax is to make it decently well-behaved in Windows.
 @ECHO OFF
 
@@ -40,19 +40,20 @@ exit /B 1
 :robocopy_success
 
 :: Provide default template files if not already present.
+::   Or, if you choose to modify mod-assets files, put your own in place.
 ::   Completing a build should completely prepare a mod for use.
 if not exist "%MY_MOD_OUTPUT:"=%\factions.lua" (
     :: "%~dp0" has a trailing slash, which confuses robocopy.  "%~dp0." removes it.
     ::   Above comment no longer relevant.  Kept in case I need to know that again later.
-    robocopy "%~dp0default-assets" %MY_MOD_OUTPUT% factions.lua /FP
+    robocopy "%~dp0mod-assets" %MY_MOD_OUTPUT% factions.lua /FP
 )
 if not exist "%MY_MOD_OUTPUT:"=%\regions.lua" (
-    robocopy "%~dp0default-assets" %MY_MOD_OUTPUT% regions.lua /FP
+    robocopy "%~dp0mod-assets" %MY_MOD_OUTPUT% regions.lua /FP
 )
 :: Since ships could be renamed to anything, only provide default ships if folder isn't present.
 :: Even if folder is empty, no default ships will be copied to output location.
 if not exist "%MY_MOD_OUTPUT:"=%\ships" (
-    robocopy "%~dp0default-assets\ships" "%MY_MOD_OUTPUT:"=%\ships" *.lua /FP
+    robocopy "%~dp0mod-assets\ships" "%MY_MOD_OUTPUT:"=%\ships" *.lua /FP
 )
 ::exit /B 1
 

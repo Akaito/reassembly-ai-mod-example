@@ -17,6 +17,8 @@ How to use
 ?. ((lua file editing; should we give a template in the AI mod repo?))
 ?. ((Edit "%USERPROFILE%/Saved Games/Reassembly/mods/index.lua"))
 	Is index.lua used?
+?. ((Update mod-assets files?  Depends on how the user wants to do things.  What's the easiest way we can recommend?))
+	((User repo clone vs. not keeping own repo/history.  Probably want to have them modify mod-assets files.))
 
 
 Files / directories
