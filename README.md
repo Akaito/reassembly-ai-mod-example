@@ -28,6 +28,9 @@ Files / directories
 	Required headers from Reassembly's code.
 - [glm](https://glm.g-truc.net/0.9.8/index.html):
 	OpenGL Mathematics library code.
+- mod-assets:
+	Faction definition(s) (factions.lua), ships, AI selection, etc.
+	((TODO: Add preview.png))
 
 
 "It's broken"/misbehaving
