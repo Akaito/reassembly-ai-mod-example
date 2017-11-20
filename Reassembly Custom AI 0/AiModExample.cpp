@@ -49,7 +49,7 @@ struct AWeaponsExample final : AIAction
     }
     //*/
 
-    string toStringName() const override { return "AWeaponsExample"; }
+    string toStringName() const override { return "AWeaponsExample_saiyan"; }
 };
 
 //=============================================================================

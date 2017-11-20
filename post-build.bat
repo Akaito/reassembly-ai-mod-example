@@ -54,7 +54,7 @@ if not exist "%MY_MOD_OUTPUT:"=%\regions.lua" (
 if not exist "%MY_MOD_OUTPUT:"=%\ships" (
     robocopy "%~dp0default-assets\ships" "%MY_MOD_OUTPUT:"=%\ships" *.lua /FP
 )
-exit /B 1
+::exit /B 1
 
 ::pause
 exit /B 0
