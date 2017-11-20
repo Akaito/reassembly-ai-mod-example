@@ -1,6 +1,8 @@
 :: If post-build.bat is failing from Visual Studio and you can't tell
 ::   why, un-comment-out the "pause" at the end of this script and run
 ::   it manually, so you can see what it's trying to do and failing on.
+:: TL;DR: This script "just" copies some files from the local default-assets and build output to
+::   your mod's files.  The crazy syntax is to make it decently well-behaved in Windows.
 @ECHO OFF
 
 :: First arg: mod name (optionally quoted)
@@ -10,6 +12,7 @@
 ::   So be sure you don't leave a trailing one in your path here.
 ::   Also be sure the path here is double-quoted.
 set MY_MOD_OUTPUT="%USERPROFILE%\Saved Games\Reassembly\mods\%~1"
+:: %foo:old=new% syntax: replace "old" with "new" in variable.  Here, replace quotes with nothing.
 set MY_AI_OUTPUT="%MY_MOD_OUTPUT:"=%\ai"
 ::echo %MY_MOD_OUTPUT%
 ::echo %MY_AI_OUTPUT%
@@ -39,11 +42,12 @@ exit /B 1
 :: Provide default template files if not already present.
 ::   Completing a build should completely prepare a mod for use.
 if not exist "%MY_MOD_OUTPUT:"=%\factions.lua" (
-    :: "%~dp0" has a trailing slash, which confuses robocopy.  Ending period removes it.
-    robocopy "%~dp0." %MY_MOD_OUTPUT% factions.lua /FP
+    :: "%~dp0" has a trailing slash, which confuses robocopy.  "%~dp0." removes it.
+    ::   Above comment no longer relevant.  Kept in case I need to know that again later.
+    robocopy "%~dp0default-assets" %MY_MOD_OUTPUT% factions.lua /FP
 )
 if not exist "%MY_MOD_OUTPUT:"=%\regions.lua" (
-    robocopy "%~dp0." %MY_MOD_OUTPUT% regions.lua /FP
+    robocopy "%~dp0default-assets" %MY_MOD_OUTPUT% regions.lua /FP
 )
 exit /B 1
 
