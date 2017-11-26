@@ -1,7 +1,7 @@
 :: If post-build.bat is failing from Visual Studio and you can't tell
 ::   why, un-comment-out the "pause" at the end of this script and run
 ::   it manually, so you can see what it's trying to do and failing on.
-:: TL;DR: This script "just" copies some files from the local mod-assets and build output to
+:: TL;DR: This script copies some files from the local mod-assets and build output to
 ::   your mod's files.  The crazy syntax is to make it decently well-behaved in Windows.
 @ECHO OFF
 
