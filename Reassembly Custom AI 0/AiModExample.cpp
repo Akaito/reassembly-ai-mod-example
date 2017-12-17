@@ -19,7 +19,6 @@ struct AWeaponsExample final : AIAction
     {
         blockedLanes;
         enabled = 0;
-        /*
         if (m_ai->target) {
             FiringData data(m_ai->target);
             data.filter = ~Block::AUTOFIRE;
@@ -32,7 +31,6 @@ struct AWeaponsExample final : AIAction
             enabled = m_ai->fireWeaponsAt(data);
             isFallback = true;
         }
-        //*/
         return enabled ? LANE_SHOOT : LANE_NONE;
     }
 

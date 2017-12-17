@@ -22,6 +22,15 @@
     <Filter Include="glm">
       <UniqueIdentifier>{ef35c7a8-40e9-4975-aa21-6e2277a4760f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="win32">
+      <UniqueIdentifier>{540868f3-7fb9-4a5f-8297-af987027be9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="win32\Outlaws2">
+      <UniqueIdentifier>{3b527d75-611b-4448-a001-ee8a53a90598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="win32\Outlaws2\Main">
+      <UniqueIdentifier>{363960f5-5ccd-4e40-8b74-ba41f1da8351}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\glm\common.hpp">
@@ -249,9 +258,96 @@
     <ClInclude Include="..\game\Weapon.h">
       <Filter>game</Filter>
     </ClInclude>
+    <ClInclude Include="..\core\AudioEvent.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Event.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\FrameLogger.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Geometry.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\GLText.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Graphics.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\GUI.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\List.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\md5.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Nav.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Outlaws.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Particles.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\phpbbhash.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Polyhedra.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Rand.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\RGB.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\SerialCore.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Shaders.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\SpacialHash.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\StdAfx_core.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Steam.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\stl_ext.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Str.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Tween.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\Vertex.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\ZipFile.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\Outlaws2\Main\platformincludes.h">
+      <Filter>win32\Outlaws2\Main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AiModExample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

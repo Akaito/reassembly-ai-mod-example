@@ -90,9 +90,8 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
       <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -114,9 +113,8 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
       <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -140,9 +138,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
       <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -168,9 +165,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
       <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -191,6 +187,32 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\core\AudioEvent.h" />
+    <ClInclude Include="..\core\Event.h" />
+    <ClInclude Include="..\core\FrameLogger.h" />
+    <ClInclude Include="..\core\Geometry.h" />
+    <ClInclude Include="..\core\GLText.h" />
+    <ClInclude Include="..\core\Graphics.h" />
+    <ClInclude Include="..\core\GUI.h" />
+    <ClInclude Include="..\core\List.h" />
+    <ClInclude Include="..\core\md5.h" />
+    <ClInclude Include="..\core\Nav.h" />
+    <ClInclude Include="..\core\Outlaws.h" />
+    <ClInclude Include="..\core\Particles.h" />
+    <ClInclude Include="..\core\phpbbhash.h" />
+    <ClInclude Include="..\core\Polyhedra.h" />
+    <ClInclude Include="..\core\Rand.h" />
+    <ClInclude Include="..\core\RGB.h" />
+    <ClInclude Include="..\core\SerialCore.h" />
+    <ClInclude Include="..\core\Shaders.h" />
+    <ClInclude Include="..\core\SpacialHash.h" />
+    <ClInclude Include="..\core\StdAfx_core.h" />
+    <ClInclude Include="..\core\Steam.h" />
+    <ClInclude Include="..\core\stl_ext.h" />
+    <ClInclude Include="..\core\Str.h" />
+    <ClInclude Include="..\core\Tween.h" />
+    <ClInclude Include="..\core\Vertex.h" />
+    <ClInclude Include="..\core\ZipFile.h" />
     <ClInclude Include="..\game\Agent.h" />
     <ClInclude Include="..\game\AI.h" />
     <ClInclude Include="..\game\AI_modapi.h" />
@@ -265,10 +287,18 @@
     <ClInclude Include="..\glm\vec3.hpp" />
     <ClInclude Include="..\glm\vec4.hpp" />
     <ClInclude Include="..\glm\vector_relational.hpp" />
+    <ClInclude Include="..\win32\Outlaws2\Main\platformincludes.h" />
     <ClInclude Include="AiModExample.h" />
+    <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AiModExample.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,10 +1,11 @@
 #pragma once
 
 // reassembly/"outlaws1" core headers
-// #include <core/Geometry.h>
+#include <core/Geometry.h>
 
 // reassembly game headers
 #include <game/AI_modapi.h>
+#include <game/Blocks.h>
 
 extern "C" {
 
