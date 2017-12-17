@@ -105,6 +105,150 @@
     <ClInclude Include="..\game\Shapes.h">
       <Filter>game</Filter>
     </ClInclude>
+    <ClInclude Include="..\game\Agent.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\AI.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\BindingInterface.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\BlockPattern.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Blocks.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\BlockTool.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\ClusterWindow.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Colors.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Constructor.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\ConstructSelector.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\ControlPanel.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Digressions.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Editor.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Export.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\FlyCam.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Font.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Galaxy.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Game.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\GameZone.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Interface.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Keys.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\KickstarterNames.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Levels.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\MapObjective.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Message.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Mods.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Network.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Notification.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Options.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\ParticleEffects.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Player.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\PortPair.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Render.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Resources.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Save.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Sector.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Selection.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Ships.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Sound.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Spacer.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\StagingTournament.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\StationInterface.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\StdAfx.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\TabMenu.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\TheBlocks.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Tournament.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Types.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\Weapon.h">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AiModExample.cpp">
