@@ -1,3 +1,4 @@
+#ifndef MOD_PROJECT
 
 #ifndef MYSTEAM_H
 #define MYSTEAM_H
@@ -143,5 +144,7 @@ bool steamInitialize();
 
 // return 2 letter language code based on steam language
 string getSteamLanguageCode();
+
+#endif
 
 #endif

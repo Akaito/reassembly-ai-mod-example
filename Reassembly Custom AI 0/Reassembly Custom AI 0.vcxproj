@@ -90,11 +90,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>game/StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
-      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;MOD_PROJECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -113,11 +113,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>game/StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
-      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;MOD_PROJECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -138,11 +138,11 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>game/StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
-      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;MOD_PROJECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -165,11 +165,11 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>game/StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
-      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;MOD_PROJECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -187,6 +187,31 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_ffi.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_private.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_types.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_unsafe.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpConstraint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpDampedRotarySpring.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpDampedSpring.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpGearJoint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpGrooveJoint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpPinJoint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpPivotJoint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpRatchetJoint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpRotaryLimitJoint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpSimpleMotor.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpSlideJoint.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\util.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpArbiter.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpBB.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpBody.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpPolyShape.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpShape.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpSpace.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpSpatialIndex.h" />
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpVect.h" />
     <ClInclude Include="..\core\AudioEvent.h" />
     <ClInclude Include="..\core\Event.h" />
     <ClInclude Include="..\core\FrameLogger.h" />
@@ -287,17 +312,20 @@
     <ClInclude Include="..\glm\vec3.hpp" />
     <ClInclude Include="..\glm\vec4.hpp" />
     <ClInclude Include="..\glm\vector_relational.hpp" />
+    <ClInclude Include="..\re2\re2.h" />
+    <ClInclude Include="..\win32\include\GL\glew.h" />
     <ClInclude Include="..\win32\Outlaws2\Main\platformincludes.h" />
     <ClInclude Include="AiModExample.h" />
-    <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\core\Str.cpp" />
+    <ClCompile Include="..\game\TheBlocks.cpp" />
     <ClCompile Include="AiModExample.cpp" />
     <ClCompile Include="StdAfx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

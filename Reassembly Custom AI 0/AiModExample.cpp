@@ -1,4 +1,8 @@
+#include "game/StdAfx.h"
 #include "AiModExample.h"
+
+#include <game/AI.h>
+#include <game/Blocks.h>
 
 struct AWeaponsExample final : AIAction
 {

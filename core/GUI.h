@@ -714,8 +714,9 @@ struct MessageBoxBase : public WidgetBase {
     float  textSize = 16.f;
     float  alpha2   = 1.f;
 
-    Button okbutton = Button(_("OK"));
+    Button okbutton;
 
+    MessageBoxBase();
     void updateFade();
     void render(const ShaderState &ss, const View& view);
 };
@@ -743,7 +744,7 @@ struct ScrollMessageBox : public WidgetBase {
     string        title;
     TextInputBase message;
     
-    Button okbutton = Button(_("OK"));
+    Button okbutton;
 
     ScrollMessageBox();
     void render(const ShaderState &ss, const View &view);

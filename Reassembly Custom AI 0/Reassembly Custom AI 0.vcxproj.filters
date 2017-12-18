@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -30,6 +22,30 @@
     </Filter>
     <Filter Include="win32\Outlaws2\Main">
       <UniqueIdentifier>{363960f5-5ccd-4e40-8b74-ba41f1da8351}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="win32\include">
+      <UniqueIdentifier>{326e878d-cc8b-4362-b769-371f67877b5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="win32\include\GL">
+      <UniqueIdentifier>{ab8eb287-31e6-44c4-b1ba-55330c5d5c15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="chipmunk">
+      <UniqueIdentifier>{19b7597c-a377-4608-9616-0e1bc157a74f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="chipmunk\include">
+      <UniqueIdentifier>{0afb569b-b916-4620-8099-64c89b5e8eff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="chipmunk\include\chipmunk">
+      <UniqueIdentifier>{a35d6457-a997-410f-8b62-bb1cd0925840}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="chipmunk\include\chipmunk\constraints">
+      <UniqueIdentifier>{c1d9d387-e3a7-48ed-9e38-aeede09f048e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="re2">
+      <UniqueIdentifier>{6734dbc8-78c1-4b2b-86fc-bf380dfc63b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AiModCode">
+      <UniqueIdentifier>{a27189c4-39f3-469c-b74d-6a4232cc21ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -104,9 +120,6 @@
     </ClInclude>
     <ClInclude Include="..\game\AI_modapi.h">
       <Filter>game</Filter>
-    </ClInclude>
-    <ClInclude Include="AiModExample.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\game\SerialBlock.h">
       <Filter>game</Filter>
@@ -336,19 +349,106 @@
     <ClInclude Include="..\core\ZipFile.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="StdAfx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\win32\Outlaws2\Main\platformincludes.h">
       <Filter>win32\Outlaws2\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\include\GL\glew.h">
+      <Filter>win32\include\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_ffi.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_private.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_types.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\chipmunk_unsafe.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpArbiter.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpBB.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpBody.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpPolyShape.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpShape.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpSpace.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpSpatialIndex.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\cpVect.h">
+      <Filter>chipmunk\include\chipmunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpConstraint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpDampedRotarySpring.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpDampedSpring.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpGearJoint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpGrooveJoint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpPinJoint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpPivotJoint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpRatchetJoint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpRotaryLimitJoint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpSimpleMotor.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\cpSlideJoint.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chipmunk\include\chipmunk\constraints\util.h">
+      <Filter>chipmunk\include\chipmunk\constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\re2\re2.h">
+      <Filter>re2</Filter>
+    </ClInclude>
+    <ClInclude Include="AiModExample.h">
+      <Filter>AiModCode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AiModExample.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>AiModCode</Filter>
     </ClCompile>
     <ClCompile Include="StdAfx.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>AiModCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\Str.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\TheBlocks.cpp">
+      <Filter>game</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

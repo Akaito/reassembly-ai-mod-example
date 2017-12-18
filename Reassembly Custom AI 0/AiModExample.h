@@ -5,7 +5,6 @@
 
 // reassembly game headers
 #include <game/AI_modapi.h>
-#include <game/Blocks.h>
 
 extern "C" {
 
