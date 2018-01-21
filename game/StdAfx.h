@@ -9,6 +9,12 @@
 #ifndef Outlaws_StdAfx_h
 #define Outlaws_StdAfx_h
 
+#ifdef MOD_PROJECT
+#define DLLFUNC __declspec(dllimport)
+#else
+#define DLLFUNC __declspec(dllexport)
+#endif
+
 #include <cstring>
 #include <cstdarg>
 #include <vector>
@@ -159,7 +165,7 @@ struct LogRecorder {
 #define FORMAT_ARG
 #endif
 
-const char* gettext_(const char* key) FORMAT_ARG;
+DLLFUNC const char* gettext_(const char* key) FORMAT_ARG;
 const char* gettext_(const char* eng, const char* key) FORMAT_ARG;
 const char* gettext_(const string &key);
 lstring gettext_(lstring key);

@@ -139,7 +139,7 @@ struct FiringData {
     bool         enableSpacialQuery = false;
     bool         useTurretTargetAngle = false;
     FiringData() {}
-    FiringData(const watch_ptr<const Block> &bl) : FiringData(bl.get()) {}
+    DLLFUNC FiringData(const watch_ptr<const Block> &bl) : FiringData(bl.get()) {}
     FiringData(const Block *bl);
 };
 
@@ -244,7 +244,7 @@ public:
     const AttackCapabilities& getAttackCaps();
     const AttackCapabilities& getCachedAttackCaps() const { return m_attackCaps; }
     const AICommandConfig  &getConfig() const { return m_config; }
-    int             fireWeaponsAt(FiringData &data);
+    DLLFUNC int     fireWeaponsAt(FiringData &data);
     bool            isValidTarget(const Block *bl) const;
     void            setTarget(const Block* bl, AIMood mood);
     float2          estimateTargetPos() const;

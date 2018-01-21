@@ -447,8 +447,5 @@
     <ClCompile Include="..\core\Str.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\game\TheBlocks.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

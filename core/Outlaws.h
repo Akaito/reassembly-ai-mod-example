@@ -96,7 +96,7 @@ int OLG_InitGL(const char **error);
 void OLG_SetFullscreenPref(int enabled);
 
 // handle assertions. return 1
-NOINLINE int OLG_OnAssertFailed(const char* file, int line, const char* func,
+DLLFUNC NOINLINE int OLG_OnAssertFailed(const char* file, int line, const char* func,
                                 const char* x, const char* format, ...)
     __printflike(5, 6) CLANG_ANALYZER_NORETURN;
 
