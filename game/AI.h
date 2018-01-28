@@ -139,8 +139,8 @@ struct FiringData {
     bool         enableSpacialQuery = false;
     bool         useTurretTargetAngle = false;
     FiringData() {}
-    DLLFUNC FiringData(const watch_ptr<const Block> &bl) : FiringData(bl.get()) {}
-    FiringData(const Block *bl);
+    FiringData(const watch_ptr<const Block> &bl) : FiringData(bl.get()) {}
+    DLLFUNC FiringData(const Block *bl);
 };
 
 struct WeaponGroup {
