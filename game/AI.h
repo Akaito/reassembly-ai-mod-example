@@ -236,7 +236,7 @@ public:
     DLLFUNC bool              isBigUpdate() const;
     bool                      isSuperUpdate() const;
     DLLFUNC const BlockList&  getEnemies();
-    const BlockList&          getAllies();
+    DLLFUNC const BlockList&  getAllies();
     float                     getEnemyDeadliness();
     float                     getAllyDeadliness();
     float                     getEnemyAllyRatio();
@@ -297,9 +297,9 @@ struct Obstacle {
     float damage;               // as a percentage of the ship health!!!!
     bool  canShootDown;
 
-    Obstacle(const BlockCluster &bc, float radius, float dmg) NOEXCEPT;
-    Obstacle(const Projectile &pr, float radius, float dmg) NOEXCEPT;
-    bool isDangerous(float2 clPos, float2 clVel) const;
+    DLLFUNC Obstacle(const BlockCluster &bc, float radius, float dmg) NOEXCEPT;
+    DLLFUNC Obstacle(const Projectile &pr, float radius, float dmg) NOEXCEPT;
+    DLLFUNC bool isDangerous(float2 clPos, float2 clVel) const;
 };
 
 struct ObstacleQuery
@@ -311,11 +311,26 @@ private:
 
 public:
 
-    const vector<Obstacle> &getLast() const;
-    const vector<Obstacle> &queryObstacles(Block* command, bool blocksOnly=false);
+    DLLFUNC const vector<Obstacle> &getLast() const;
+    DLLFUNC const vector<Obstacle> &queryObstacles(Block* command, bool blocksOnly=false);
     DLLFUNC const vector<Block*> &queryBlockObstacles(Block *command);
     int cullForDefenses(const AttackCapabilities &caps);
 
 };
+
+// estimate best overall direction for avoiding obstacles
+DLLFUNC float2 getTargetDirection(const AI* ai, const vector<Obstacle> &obs);
+
+//AAvoidWeapon does not always know what the best direction is, and will only make small adjustments anyway
+DLLFUNC bool velocityObstacles(
+    float2 *velOut,
+    float* pBestDamage,
+    float2 position,
+    float2 velocity,
+    float2 maxAccel,
+    float2 targetDir,
+    float2 rushDir,
+    const vector<Obstacle> &obstacles
+);
 
 #endif // _AI_H

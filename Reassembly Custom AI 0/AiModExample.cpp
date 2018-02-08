@@ -4,8 +4,66 @@
 #include <game/AI.h>
 #include <game/Blocks.h>
 
+struct AAvoidCluster_ModStarter final : public AIAction
+{
+
+    vector<Obstacle> obstacles;
+    snConfig         config;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.isMobile; }
+
+    void generateClusterObstacleList(Block* command)
+    {
+        // FIXME this should include asteroids! - nearby asteroid blocks?
+        const BlockCluster *cl       = command->cluster;
+        const float         clRad    = cl->getBRadius();
+        const float2        clPos    = cl->getAbsolutePos();
+        const float2        clVel    = cl->getVel();
+        const BlockList    &commands = m_ai->getAllies();
+
+        obstacles.clear();
+        foreach (const Block *bl, commands)
+        {
+            const BlockCluster *bcl = bl->cluster;
+            if (bl != command && cl != bcl && bcl->getMass() > 0.5f * cl->getMass())
+            {
+                Obstacle obs(*bcl, clRad, bcl->getMass() / cl->getMass());
+                if (intersectRayCircle(clPos, clVel - obs.vel, obs.pos, 5 * obs.rad))
+                    obstacles.push_back(obs);
+            }
+        }
+    }
+
+    AAvoidCluster_ModStarter(AI* ai) : AIAction(ai, LANE_MOVEMENT, PRI_ALWAYS) {}
+
+    virtual uint update(uint blockedLanes)
+    {
+        // explosive blocks / missiles don't collide with each other anyway
+        if (m_ai->command->sb.features&Block::EXPLODE)
+            return LANE_NONE;
+
+        // don't bother for single seeds
+        if ((m_ai->command->sb.features&Block::SEED) && getCluster()->size() == 1)
+            return LANE_NONE;
+
+        generateClusterObstacleList(m_ai->command);
+
+        if (velocityObstacles(&config.velocity, NULL, getClusterPos(), getCluster()->getVel(),
+            m_ai->nav->maxAccel, getTargetDirection(m_ai, obstacles), float2(), obstacles))
+        {
+            m_ai->nav->setDest(config, SN_VELOCITY, 0);
+            return LANE_MOVEMENT;
+        }
+        return LANE_NONE;
+    }
+
+    string toStringName() const override { return "AAvoidCluster_ModStarter"; }
+};
+
+
 // set fallback target - i.e. incoming missile
-struct AFallbackTarget_ModStarter final : public AIAction {
+struct AFallbackTarget_ModStarter final : public AIAction
+{
 
     static bool supportsConfig(const AICommandConfig& cfg) { return cfg.hasWeapons; }
     AFallbackTarget_ModStarter(AI* ai) : AIAction(ai, LANE_TARGET, PRI_ALWAYS) {}
@@ -181,11 +239,13 @@ bool SupportsConfig(const char * name, const AICommandConfig& cfg)
 */
 
 AIAction * CreateAiAction(const char * name, AI* ai) {
+    if (!_strcmpi(name, "AAvoidCluster"))
+        return new AAvoidCluster_ModStarter(ai);
     if (!_strcmpi(name, "AFallbackTarget"))
         return new AFallbackTarget_ModStarter(ai);
-    if (!_strcmpi(name, "AWeapons"))
-        return new AWeapons_ModStarter(ai);
     if (!_strcmpi(name, "ATargetEnemy"))
         return new ATargetEnemy_ModStarter(ai);
+    if (!_strcmpi(name, "AWeapons"))
+        return new AWeapons_ModStarter(ai);
     return nullptr;
 }
