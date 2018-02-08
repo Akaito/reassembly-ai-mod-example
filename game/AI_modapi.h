@@ -7,7 +7,6 @@ typedef unsigned int uint;
 /////
 
 // originally from Geometry.h
-// #include "Geometry.h"
 #define GLM_FORCE_RADIANS 1
 #define GLM_FORCE_XYZW 1
 #include "../glm/vec2.hpp"
@@ -28,23 +27,8 @@ typedef unsigned int uint;
 #include "../glm/gtc/random.hpp"
 //#include "../glm/gtc/quaternion.hpp"
 
-/*
-extern template struct glm::tvec2<float>;
-extern template struct glm::tvec2<int>;
-extern template struct glm::tvec3<float>;
-extern template struct glm::tvec3<int>;
-*/
-
 typedef unsigned char uchar;
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef unsigned long long uint64;
-typedef uint32 uint;
-typedef signed char int8;
-typedef short int16;
-typedef int int32;
-typedef long long int64;
+typedef unsigned long long uint64; // not from Geometry.h
 
 typedef glm::vec2 float2;
 /////
@@ -146,7 +130,7 @@ struct AIAction {
 
     DLLFUNC AIMood isActivelyHostile(const Block* target) const;
 
-    float getWaypointRadius() const;
+    DLLFUNC float getWaypointRadius() const;
     
 };
 

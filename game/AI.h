@@ -8,6 +8,10 @@
 #include "AI_modapi.h"
 #include "Types.h"
 
+DLLFUNC extern float kAITimeStep;
+DLLFUNC extern float kAIBigTimeStep;
+DLLFUNC extern float kAISuperTimeStep;
+
 template <typename Vtx> struct LineMesh;
 template <typename TriV, typename LineV> struct MeshPair;
 struct AIModData;
@@ -19,8 +23,12 @@ struct FiringFilter;
 struct OneMod;
 struct WeaponGroup;
 
-float2 directionForFixed(const BlockCluster *cluster, float2 targetPos, float2 targetVel,
-                         const FiringFilter &filter);
+DLLFUNC float2 directionForFixed(
+    const BlockCluster *cluster,
+    float2 targetPos,
+    float2 targetVel,
+    const FiringFilter &filter
+);
 
 #ifdef _WIN32
 typedef HMODULE DllHandle;
@@ -105,7 +113,7 @@ struct AttackCapabilities {
     float  healthRegen = 0.f;
     
     vector< pair<float, float> > rangeDmg;
-    float getDpsAtRange(float range) const;
+    DLLFUNC float getDpsAtRange(float range) const;
     
     bool   initialized = false;
 };
@@ -288,6 +296,16 @@ public:
     void render(DMesh &mesh, float2 screenPos, vector<TextBoxString> &tvec);
 
     size_t getSizeof() const;
+};
+
+
+struct APositionBase : public AIAction
+{
+    bool obstructed = false;
+
+    APositionBase(AI* ai): AIAction(ai, LANE_MOVEMENT) { }
+
+    DLLFUNC bool isTargetObstructed(const Block *target=NULL);
 };
 
 

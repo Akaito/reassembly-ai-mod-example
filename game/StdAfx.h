@@ -166,7 +166,7 @@ struct LogRecorder {
 #endif
 
 DLLFUNC const char* gettext_(const char* key) FORMAT_ARG;
-const char* gettext_(const char* eng, const char* key) FORMAT_ARG;
+DLLFUNC const char* gettext_(const char* eng, const char* key) FORMAT_ARG;
 const char* gettext_(const string &key);
 lstring gettext_(lstring key);
 #define _(X) gettext_(X)

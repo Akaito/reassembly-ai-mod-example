@@ -125,7 +125,7 @@ struct BlockCluster final : public Body {
     bool   hasCommand()          const;
     ClusterList&       getSubclusters()       { return m_subclusters; }
     const ClusterList& getSubclusters() const { return m_subclusters; }
-    int isMobile() const;
+    DLLFUNC int isMobile() const;
     ClusterClass getClass() const;
     void overwriteFromId();
 
@@ -729,7 +729,7 @@ public:
     float  getAbsoluteAngle() const { return sb.angle + cluster->getAbsoluteAngle(); }
     float2 getAbsoluteRot() const { return angleToVector(getAbsoluteAngle()); }
     float  getRenderAngle() const { return sb.angle + cluster->getRenderAngle(); }
-    void   getNavConfig(snConfig* c) const;
+    DLLFUNC void   getNavConfig(snConfig* c) const;
 
     float2 getPortAbsolutePos(uint i) const
     {

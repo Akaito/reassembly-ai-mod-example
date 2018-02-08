@@ -4,6 +4,110 @@
 #include <game/AI.h>
 #include <game/Blocks.h>
 
+
+struct AAttack_ModStarter final : public APositionBase {
+
+    snConfigDims targetCfg;
+
+    AAttack_ModStarter(AI* ai): APositionBase(ai) { }
+
+    virtual uint update(uint blockedLanes)
+    {
+        m_ai->rushDir = float2();
+        const Block *target = m_ai->target.get();
+        if (isTargetObstructed(target))
+            return LANE_NONE;
+
+        target->getNavConfig(&targetCfg.cfg);
+        snPrecision precision;
+        precision.pos = getWaypointRadius();
+
+        Block*        command = m_ai->command;
+        BlockCluster* cluster = command->cluster;
+
+        const AttackCapabilities &caps = m_ai->getAttackCaps();
+
+        // can't attack without weapons...
+        if (!caps.weapons)
+            return noAction("No Weapons");
+
+        const AttackCapabilities &tcaps = target->commandAI->getAttackCaps();
+
+        const float2 pos        = cluster->getAbsolutePos();
+        const float2 targetPos  = target->getAbsolutePos();
+        const float2 targetVel  = target->cluster->getVel();
+        const float  targetDist = distance(targetPos, pos) - 0.5f * target->cluster->getCoreRadius();
+
+        // FIXME targetDist is a hack here... works fine for the common case
+
+        targetCfg.dims = 0;
+
+        const float mydps = caps.rushDps / tcaps.totalHealth;
+        const float tdps = tcaps.totalDps / caps.totalHealth;
+        const uint64 flags = m_ai->getConfig().flags;
+
+        const bool rushing = (mydps > 1.1f * tdps || (flags&SerialCommand::ALWAYS_RUSH)) && !(flags&SerialCommand::ALWAYS_MANEUVER);
+        const float snipeRange = 1.1f * tcaps.maxRange;
+        const bool canStayOutOfRange = (caps.maxRange > snipeRange) &&
+            target->cluster->isMobile() &&
+            caps.getDpsAtRange(snipeRange) > 2.f * tcaps.healthRegen &&
+            !(flags&SerialCommand::ALWAYS_MANEUVER);
+        const bool sniping = (!rushing && canStayOutOfRange) || (flags&SerialCommand::ALWAYS_KITE);
+        status = rushing ? _("Rushing") :
+            canStayOutOfRange ? gettext_("Kiting", "Sniping") : _("Maneuvering");
+
+        // FIXME too many magic numbers here! at least make them cvars
+        const float wantRange = rushing ? 0.f :
+            canStayOutOfRange ? snipeRange :
+            (0.9f * caps.bestRange);
+
+        const float2 targetLeadPos = targetPos + kAIBigTimeStep * targetVel;
+        const float2 targetDir = normalize(targetLeadPos - pos);
+
+        if (!canStayOutOfRange && wantRange < targetDist)
+            m_ai->rushDir = targetDir;
+
+        const float2 dir = (caps.hasFixed ? directionForFixed(cluster, targetPos, targetVel, FiringFilter()) :
+            targetLeadPos - pos);
+
+        // move to the optimal attack range
+        targetCfg.cfg.position = targetLeadPos - targetDir * wantRange;
+        targetCfg.cfg.velocity = 0.95f * targetVel; // damp velocity - otherwise they drift together
+        targetCfg.cfg.angle = vectorToAngle(dir);
+        targetCfg.dims = SN_POSITION | SN_ANGLE | (rushing ? SN_TARGET_VEL : SN_VELOCITY);
+        precision.pos = max(precision.pos, 0.1f * caps.bestRange);
+
+        // escape super fast if we are sniping
+        if (sniping) {
+            if (targetDist < wantRange) {
+                targetCfg.cfg.velocity += 10.f * (targetCfg.cfg.position - pos);
+                targetCfg.dims = SN_ANGLE | SN_VELOCITY | SN_VEL_ALLOW_ROTATION;
+            }
+            else if (targetDist < 1.1f * caps.maxRange) {
+                // don't worry about position, just match velocity
+                if (caps.hasFixed)
+                    targetCfg.dims = SN_ANGLE | SN_VELOCITY;
+                else
+                    targetCfg.dims = SN_ANGLE | SN_VELOCITY | SN_VEL_ALLOW_ROTATION;
+            }
+        }
+        else if (caps.hasFixed && targetDist <= caps.maxRange) {
+            targetCfg.dims |= SN_POS_ANGLE;
+        }
+
+        if (!targetCfg.dims)
+            return noAction("No direction");
+
+        m_ai->nav->setDest(targetCfg.cfg, targetCfg.dims, precision);
+        return LANE_MOVEMENT;
+    }
+
+    virtual const char* toPrettyString() const { return status; }
+
+    string toStringName() const override { return "AAttack_ModStarter"; }
+};
+
+
 struct AAvoidCluster_ModStarter final : public AIAction
 {
 
@@ -239,6 +343,8 @@ bool SupportsConfig(const char * name, const AICommandConfig& cfg)
 */
 
 AIAction * CreateAiAction(const char * name, AI* ai) {
+    if (!_strcmpi(name, "AAttack"))
+        return new AAttack_ModStarter(ai);
     if (!_strcmpi(name, "AAvoidCluster"))
         return new AAvoidCluster_ModStarter(ai);
     if (!_strcmpi(name, "AFallbackTarget"))
