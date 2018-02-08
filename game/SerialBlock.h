@@ -440,7 +440,7 @@ struct SerialBlock final {
     int deadliness() const;
     int growResource() const { return max(1, deadliness()); }
     int getPlayerEnergy() const;
-    bool isTransient() const;
+    DLLFUNC bool isTransient() const;
     bool isTypeDefault() const;
 
     float getArea() const { return spec().area; }

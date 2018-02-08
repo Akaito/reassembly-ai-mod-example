@@ -478,7 +478,7 @@ struct Block final : public Watchable {
     void onClusterInit();
     float2 getClusterPos() const { return cluster->getAbsolutePos(); }
     float getClusterBRadius() const { return cluster->getBRadius(); }
-    int getBlueprintDeadliness() const;
+    DLLFUNC int getBlueprintDeadliness() const;
 
     bool isSensorVisible(const BlockCluster* cl) const;
     

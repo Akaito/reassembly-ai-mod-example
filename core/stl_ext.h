@@ -303,8 +303,8 @@ struct watch_ptr_base {
     watch_ptr_base*  prev = NULL;
 
 protected:
-    void unlink();
-    void link(const Watchable* p);
+    DLLFUNC void unlink();
+    DLLFUNC void link(const Watchable* p);
 };
 
 struct Watchable : public IDeletable {

@@ -231,38 +231,38 @@ public:
     GameZone *                      zone = NULL;
     AutofireData                    autofire;
 
-    void             setMod(const AIModData* modApi);
-    ObstacleQuery&   getQuery();
-    bool             isBigUpdate() const;
-    bool             isSuperUpdate() const;
-    const BlockList& getEnemies();
-    const BlockList& getAllies();
-    float            getEnemyDeadliness();
-    float            getAllyDeadliness();
-    float            getEnemyAllyRatio();
-    vector<ResourcePocket*>& getVisibleResources();
-    const AttackCapabilities& getAttackCaps();
+    void             setMod(const AIModData* modApi, bool shouldResetActions);
+    DLLFUNC ObstacleQuery&    getQuery();
+    DLLFUNC bool              isBigUpdate() const;
+    bool                      isSuperUpdate() const;
+    DLLFUNC const BlockList&  getEnemies();
+    const BlockList&          getAllies();
+    float                     getEnemyDeadliness();
+    float                     getAllyDeadliness();
+    float                     getEnemyAllyRatio();
+    vector<ResourcePocket*>&  getVisibleResources();
+    DLLFUNC const AttackCapabilities& getAttackCaps();
     const AttackCapabilities& getCachedAttackCaps() const { return m_attackCaps; }
-    const AICommandConfig  &getConfig() const { return m_config; }
-    DLLFUNC int     fireWeaponsAt(FiringData &data);
-    bool            isValidTarget(const Block *bl) const;
-    void            setTarget(const Block* bl, AIMood mood);
-    float2          estimateTargetPos() const;
-    bool            canEstimateTargetPos() const;
-    float2          getTargetPos() const;
-    const Block*    getTarget() const;
+    const AICommandConfig&    getConfig() const { return m_config; }
+    DLLFUNC int               fireWeaponsAt(FiringData &data);
+    bool                      isValidTarget(const Block *bl) const;
+    DLLFUNC void              setTarget(const Block* bl, AIMood mood);
+    float2                    estimateTargetPos() const;
+    bool                      canEstimateTargetPos() const;
+    float2                    getTargetPos() const;
+    const Block*              getTarget() const;
 
-    Block*          getParent() const { return m_parent.get(); }
-    const AI*       getParentAI() const;
+    Block*                    getParent() const { return m_parent.get(); }
+    const AI*                 getParentAI() const;
     vector< watch_ptr<Block> >& getChildren() { return m_children; }
     const vector< watch_ptr<Block> >& getChildren() const { return m_children; }
-    void            adoptChild(Block* child);
-    bool            removeChild(Block* child);
-    void            removeParent();
-    Faction_t       getFaction() const;
+    void                      adoptChild(Block* child);
+    bool                      removeChild(Block* child);
+    void                      removeParent();
+    Faction_t                 getFaction() const;
 
-    int             isMobile() const;
-    const char*     toPrettyState() const { return m_actions.prettyState; }
+    int                       isMobile() const;
+    const char*               toPrettyState() const { return m_actions.prettyState; }
 
     // Block/Game/UI interface
     SerialCommand       *sc;    // = command->sb.command
@@ -290,5 +290,32 @@ public:
     size_t getSizeof() const;
 };
 
+
+struct Obstacle {
+    float2 pos, vel;
+    float rad;                  // includes the radius of the ship!!!!
+    float damage;               // as a percentage of the ship health!!!!
+    bool  canShootDown;
+
+    Obstacle(const BlockCluster &bc, float radius, float dmg) NOEXCEPT;
+    Obstacle(const Projectile &pr, float radius, float dmg) NOEXCEPT;
+    bool isDangerous(float2 clPos, float2 clVel) const;
+};
+
+struct ObstacleQuery
+{
+private:
+    vector<Projectile*> m_projVec;
+    vector<Block*>      m_blockVec;
+    vector<Obstacle>    m_obstacles;
+
+public:
+
+    const vector<Obstacle> &getLast() const;
+    const vector<Obstacle> &queryObstacles(Block* command, bool blocksOnly=false);
+    DLLFUNC const vector<Block*> &queryBlockObstacles(Block *command);
+    int cullForDefenses(const AttackCapabilities &caps);
+
+};
 
 #endif // _AI_H

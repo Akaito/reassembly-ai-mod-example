@@ -61,10 +61,12 @@
 #pragma clang diagnostic pop
 #endif
 
+/*
 extern template struct glm::tvec2<float>;
 extern template struct glm::tvec2<int>;
 extern template struct glm::tvec3<float>;
 extern template struct glm::tvec3<int>;
+*/
 
 #include <cmath>
 #include <algorithm>

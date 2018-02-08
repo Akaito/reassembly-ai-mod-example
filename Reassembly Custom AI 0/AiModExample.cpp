@@ -4,7 +4,51 @@
 #include <game/AI.h>
 #include <game/Blocks.h>
 
-struct AWeapons_Saiyan final : AIAction
+// set fallback target - i.e. incoming missile
+struct AFallbackTarget_ModStarter final : public AIAction {
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.hasWeapons; }
+    AFallbackTarget_ModStarter(AI* ai) : AIAction(ai, LANE_TARGET, PRI_ALWAYS) {}
+
+    virtual uint update(uint blockedLanes)
+    {
+        float2 blah;
+        if (m_ai->isBigUpdate())
+        {
+            float         minDistSqr = FLT_MAX;
+            const Block  *target     = NULL;
+            /*
+            const float2  pos        = m_ai->command->getClusterPos();
+
+            foreach (const Block* tgt, m_ai->getEnemies())
+            {
+                const float dist = distanceSqr(pos, tgt->getAbsolutePos());
+                if (dist < minDistSqr && (isActivelyHostile(tgt) != AI::NEUTRAL)) {
+                    minDistSqr = dist;
+                    target     = tgt;
+                }
+            }
+            foreach (const Block *tgt, m_ai->getQuery().queryBlockObstacles(m_ai->command))
+            {
+                const float dist = distanceSqr(pos, tgt->getAbsolutePos());
+                if (dist < minDistSqr && (isActivelyHostile(tgt) != AI::NEUTRAL)) {
+                    minDistSqr = dist;
+                    target     = tgt;
+                }
+            }
+
+            status = target ? "Set fallback target" : "no fallback target";
+            m_ai->fallbackTarget = target;
+            */
+        }
+        return LANE_NONE;       // never blocks other targetingp
+    }
+
+    string toStringName() const override { return "AFallbackTarget_ModStarter"; }
+};
+
+
+struct AWeapons_ModStarter final : AIAction
 {
     //*
     int  enabled = 0;        // number of weapons enabled
@@ -17,7 +61,7 @@ struct AWeapons_Saiyan final : AIAction
     }
     */
 
-    AWeapons_Saiyan(AI* ai) : AIAction(ai, LANE_SHOOT) {}
+    AWeapons_ModStarter(AI* ai) : AIAction(ai, LANE_SHOOT) {}
 
     uint update(uint blockedLanes) override
     {
@@ -51,22 +95,25 @@ struct AWeapons_Saiyan final : AIAction
     }
     //*/
 
-    string toStringName() const override { return "AWeapons_Saiyan"; }
+    string toStringName() const override { return "AWeapons_ModStarter"; }
 };
 
 
 // target based on faction: attack enemy ships
-struct ATargetEnemy_Saiyan final : public ATargetBase {
+struct ATargetEnemy_ModStarter final : public ATargetBase {
 
-    ATargetEnemy_Saiyan(AI* ai) : ATargetBase(ai) { }
+    ATargetEnemy_ModStarter(AI* ai) : ATargetBase(ai) { }
 
     virtual uint update(uint blockedLanes)
     {
         return findSetTarget();
     }
 
-    // copy-paste from Reassembly ATargetBase, just to document
-    #if 0
+    // copy-paste from Reassembly ATargetBase.
+    // If you don't implement it, you get the built-in version instead.
+    // If you use the built-in version, the two copy-paste "CVars" below
+    // are respected (instead of being hard-coded as below).
+    #if 1
     uint findSetTarget()
     {
         // cvars in Reassembly; lazy way to get them here
@@ -117,7 +164,7 @@ struct ATargetEnemy_Saiyan final : public ATargetBase {
     }
     #endif
 
-    string toStringName() const override { return "ATargetEnemy_Saiyan"; }
+    string toStringName() const override { return "ATargetEnemy_ModStarter"; }
 };
 
 
@@ -134,9 +181,11 @@ bool SupportsConfig(const char * name, const AICommandConfig& cfg)
 */
 
 AIAction * CreateAiAction(const char * name, AI* ai) {
+    if (!_strcmpi(name, "AFallbackTarget"))
+        return new AFallbackTarget_ModStarter(ai);
     if (!_strcmpi(name, "AWeapons"))
-        return new AWeapons_Saiyan(ai);
+        return new AWeapons_ModStarter(ai);
     if (!_strcmpi(name, "ATargetEnemy"))
-        return new ATargetEnemy_Saiyan(ai);
+        return new ATargetEnemy_ModStarter(ai);
     return nullptr;
 }

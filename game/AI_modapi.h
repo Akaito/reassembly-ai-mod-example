@@ -7,6 +7,7 @@ typedef unsigned int uint;
 /////
 
 // originally from Geometry.h
+// #include "Geometry.h"
 #define GLM_FORCE_RADIANS 1
 #define GLM_FORCE_XYZW 1
 #include "../glm/vec2.hpp"
@@ -27,8 +28,23 @@ typedef unsigned int uint;
 #include "../glm/gtc/random.hpp"
 //#include "../glm/gtc/quaternion.hpp"
 
+/*
+extern template struct glm::tvec2<float>;
+extern template struct glm::tvec2<int>;
+extern template struct glm::tvec3<float>;
+extern template struct glm::tvec3<int>;
+*/
+
 typedef unsigned char uchar;
-typedef unsigned long long uint64; // not from Geometry.h
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+typedef unsigned long long uint64;
+typedef uint32 uint;
+typedef signed char int8;
+typedef short int16;
+typedef int int32;
+typedef long long int64;
 
 typedef glm::vec2 float2;
 /////
@@ -112,15 +128,15 @@ struct AIAction {
 
     static bool supportsConfig(const AICommandConfig& cfg) { return true; }
 
-    uint noAction(const char* reason);
+    DLLFUNC uint noAction(const char* reason);
 
     string toString() const;
 
     virtual void render(void* line) const { line; }
 
     // helper
-    const BlockCluster* getCluster() const;
-    float2 getClusterPos() const;
+    DLLFUNC const BlockCluster* getCluster() const;
+    DLLFUNC float2 getClusterPos() const;
     float  getClusterBRadius() const;
 
     bool isDestObstructed(float2 dest, uint ignoreFaction, float avoidDebrisRatio) const;
@@ -128,7 +144,7 @@ struct AIAction {
     // repath if we hit something (bigger than kAvoidDebrisRadiusRatio)
     bool needsRepath() const;
 
-    AIMood isActivelyHostile(const Block* target) const;
+    DLLFUNC AIMood isActivelyHostile(const Block* target) const;
 
     float getWaypointRadius() const;
     
@@ -167,13 +183,13 @@ struct ATargetBase : public AIAction {
 
     ATargetBase(AI* ai) : AIAction(ai, LANE_TARGET, PRI_ALWAYS) {}
 
-    virtual AIMood acceptTarget(const Block* target) const;
+    DLLFUNC virtual AIMood acceptTarget(const Block* target) const;
 
-    Target testAcceptTarget(const Block *tgt) const;
+    DLLFUNC Target testAcceptTarget(const Block *tgt) const;
 
-    float targetDistanceMetric(float2 defPos, const Block *tgt) const;
+    DLLFUNC float targetDistanceMetric(float2 defPos, const Block *tgt) const;
 
-    uint findSetTarget();
+    DLLFUNC uint findSetTarget();
 };
 
 
