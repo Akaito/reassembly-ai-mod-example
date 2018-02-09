@@ -6,11 +6,14 @@
 #define CHRIS_DLL_TEST (1)
 
 #include "AI_modapi.h"
+#include "Nav.h"
 #include "Types.h"
 
 DLLFUNC extern float kAITimeStep;
 DLLFUNC extern float kAIBigTimeStep;
 DLLFUNC extern float kAISuperTimeStep;
+
+DLLFUNC extern int kAIPathMaxQueries;
 
 template <typename Vtx> struct LineMesh;
 template <typename TriV, typename LineV> struct MeshPair;
@@ -334,6 +337,101 @@ public:
     DLLFUNC const vector<Block*> &queryBlockObstacles(Block *command);
     int cullForDefenses(const AttackCapabilities &caps);
 
+};
+
+class PathFinder {
+
+    struct Node {
+        float2      pos;
+        const Node *parent = NULL;
+        Node       *next   = NULL;
+        int         g      = 0; // number of nodes to start
+        float       f      = -1.f; // weight. lower weighted nodes are searched first
+
+        struct Compare {
+            bool operator()(const Node *a, const Node *b) { return a->f > b->f; }
+        };
+    };
+
+    typedef std::priority_queue<Node*, std::vector<Node*>, Node::Compare> PQueue;
+    Node *                                  m_nodes = NULL;
+    PQueue                                  m_q;
+    std::unordered_set<const BlockCluster*> m_traced;
+    spatial_hash<bool>                      m_explored;
+    vector<float2>                          m_path;
+    int                                     m_queries = 0;
+    int                                     m_maxQueries = kAIPathMaxQueries;
+
+    const BlockCluster* intersectSegmentClusters(const BlockCluster* cl, float2 start, float2 end) const;
+    bool trace1(const BlockCluster* ocl, const BlockCluster *cl, float2 start, float2 end,
+                float g, const Node *parent);
+    bool trace(const BlockCluster *cl, float2 start, float2 end, float g, const Node *parent);
+    void calcPath(const Node *node);
+    void clear();
+
+public:
+
+    DLLFUNC PathFinder();
+
+    ~PathFinder()
+    {
+        m_nodes = slist_clear(m_nodes);
+    }
+
+    const vector<float2>& getPath() const { return m_path; }
+    const vector<float2>& findPath(const BlockCluster *cl, float2 end, float endRad, int maxc);
+    void render(VertexPusherLine& line) const;
+};
+
+struct AMove final : public AIAction {
+
+    snConfigDims target;
+    snPrecision  prec;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.isMobile; }
+
+    AMove(AI* ai);
+    AMove(AI* ai, float2 pos, float r);
+
+    void setMoveDest(float2 pos, float r);
+    void setMoveAngle(float angle, float rad);
+    void setMoveRot(float2 vec, float rad);
+    void setMoveDestAngle(float2 pos, float r, float angle, float rad);
+    void setMoveConfig(const snConfigDims& cfg, float radius);
+    virtual uint update(uint blockedLanes);
+};
+
+// FIXME should provide a way to set velocity at destination
+struct APath final : public AIAction {
+
+    PathFinder path;
+    AMove move;
+
+    float  time;
+    float2 pos;
+    float  rad;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.isMobile; }
+
+    APath(AI* ai) : AIAction(ai, LANE_MOVEMENT), move(ai)
+    {
+        setPathDest(float2(0), 0);
+        IsFinished = true;
+    }
+
+    APath(AI* ai, float2 pos_, float r) : AIAction(ai, LANE_MOVEMENT), move(ai, pos_, r)
+    {
+        setPathDest(pos_, r);
+    }
+
+
+    void setPathDest(float2 p, float r);
+
+    bool isAtDest() const;
+
+    virtual uint update(uint blockedLanes);
+
+    virtual void render(void* lineVoid) const;
 };
 
 // estimate best overall direction for avoiding obstacles

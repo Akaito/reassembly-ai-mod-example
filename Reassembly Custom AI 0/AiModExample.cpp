@@ -210,6 +210,86 @@ struct AFallbackTarget_ModStarter final : public AIAction
 };
 
 
+struct AInvestigate_ModStarter final : public AIAction
+{
+
+    APath       path;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return APath::supportsConfig(cfg); }
+    virtual void render(void* line) const { path.render(line); }
+
+    AInvestigate_ModStarter(AI* ai) : AIAction(ai, LANE_MOVEMENT), path(ai) { }
+
+    virtual uint update(uint blockedLanes)
+    {
+        if (path.IsFinished && m_ai->isBigUpdate())
+        {
+            float2 investigatePos;
+            float  investigateRadius = getWaypointRadius();
+
+            if (m_ai->target)
+            {
+                // other actions that only work with line of sight may rely on this for path finding
+                // they should resume control before we actually get all the way there
+                investigatePos = m_ai->target->getClusterPos();
+                investigateRadius = 2.f * m_ai->target->cluster->getCoreRadius();
+                status = "Pathing to Target";
+            }
+            else if (m_ai->canEstimateTargetPos())
+            {
+                investigatePos = m_ai->estimateTargetPos();
+                status = "Pathing to Estimated Target";
+            }
+            else if (m_ai->healTarget)
+            {
+                investigatePos = m_ai->healTarget->getAbsolutePos();
+                investigateRadius = max(investigateRadius, m_ai->healRange);
+                status = "Pathing to Heal Ally";
+            }
+            else if (m_ai->getQuery().queryObstacles(m_ai->command).size())
+            {
+                const vector<Obstacle>& obs = m_ai->getQuery().getLast();
+                float2 avgObstPos;
+                float2 avgObstVel;
+                foreach (const Obstacle& ob, obs)
+                {
+                    avgObstPos += ob.pos;
+                    avgObstVel += ob.vel;
+                }
+                avgObstPos /= obs.size();
+                avgObstVel /= obs.size();
+
+                if (nearZero(avgObstVel))
+                    investigatePos = avgObstPos;
+                else
+                    intersectRayCircle(&investigatePos, avgObstPos, -avgObstVel,
+                        getClusterPos(), getCluster()->getSensorRadius());
+                status = "Pathing to Obstacle";
+            }
+            else if (m_ai->priorityTarget)
+            {
+                const BlockCluster *pcl = m_ai->priorityTarget->cluster;
+                investigatePos = pcl->getAbsolutePos();
+                investigateRadius = 2.f * (pcl->getCoreRadius() + getCluster()->getSensorRadius());
+                status = "Pathing to Priority Target";
+            }
+
+            if (nearZero(investigatePos))
+            {
+                path.IsFinished = true;
+                return noAction("");
+            }
+
+            path.setPathDest(investigatePos, investigateRadius);
+        }
+
+        return path.update(0);
+    }
+
+    string toStringName() const override { return "AInvestigate_ModStarter"; }
+};
+
+
 struct AWeapons_ModStarter final : AIAction
 {
     //*
@@ -349,6 +429,8 @@ AIAction * CreateAiAction(const char * name, AI* ai) {
         return new AAvoidCluster_ModStarter(ai);
     if (!_strcmpi(name, "AFallbackTarget"))
         return new AFallbackTarget_ModStarter(ai);
+    if (!_strcmpi(name, "AInvestigate"))
+        return new AInvestigate_ModStarter(ai);
     if (!_strcmpi(name, "ATargetEnemy"))
         return new ATargetEnemy_ModStarter(ai);
     if (!_strcmpi(name, "AWeapons"))
