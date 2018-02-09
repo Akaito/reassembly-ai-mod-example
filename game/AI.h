@@ -258,8 +258,8 @@ public:
     DLLFUNC int               fireWeaponsAt(FiringData &data);
     bool                      isValidTarget(const Block *bl) const;
     DLLFUNC void              setTarget(const Block* bl, AIMood mood);
-    float2                    estimateTargetPos() const;
-    bool                      canEstimateTargetPos() const;
+    DLLFUNC float2            estimateTargetPos() const;
+    DLLFUNC bool              canEstimateTargetPos() const;
     float2                    getTargetPos() const;
     const Block*              getTarget() const;
 
@@ -390,7 +390,7 @@ struct AMove final : public AIAction {
 
     static bool supportsConfig(const AICommandConfig& cfg) { return cfg.isMobile; }
 
-    AMove(AI* ai);
+    DLLFUNC AMove(AI* ai);
     AMove(AI* ai, float2 pos, float r);
 
     void setMoveDest(float2 pos, float r);
@@ -425,13 +425,13 @@ struct APath final : public AIAction {
     }
 
 
-    void setPathDest(float2 p, float r);
+    DLLFUNC void setPathDest(float2 p, float r);
 
     bool isAtDest() const;
 
-    virtual uint update(uint blockedLanes);
+    DLLFUNC virtual uint update(uint blockedLanes);
 
-    virtual void render(void* lineVoid) const;
+    DLLFUNC virtual void render(void* lineVoid) const;
 };
 
 // estimate best overall direction for avoiding obstacles

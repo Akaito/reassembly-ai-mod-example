@@ -251,7 +251,7 @@ public:
     void getNavConfig(snConfig* c) const;
 
     // return a bounding circle outside of which no sensors can detect
-    float getSensorRadius() const;
+    DLLFUNC float getSensorRadius() const;
 
     // return a bounding circle inside of which at least one tractor can collect
     float getTractorBRadius() const { return m_tractorBRadius; }
