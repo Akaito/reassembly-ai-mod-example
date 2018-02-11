@@ -72,11 +72,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\core;$(SolutionDir)win32\Outlaws2\Main;E:\_work\SDKs\SDL2-2.0.5\include;E:\_work\SDKs\curl-7.54.1;E:\_work\SDKs\zlib-1.2.11;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)core;$(SolutionDir)win32\Outlaws2\Main;$(SolutionDir)vendor\SDL2-2.0.7\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\core;$(SolutionDir)win32\Outlaws2\Main;E:\_work\SDKs\SDL2-2.0.5\include;E:\_work\SDKs\curl-7.54.1;E:\_work\SDKs\zlib-1.2.11;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)core;$(SolutionDir)win32\Outlaws2\Main;$(SolutionDir)vendor\SDL2-2.0.7\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
