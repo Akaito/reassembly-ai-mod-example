@@ -9,10 +9,10 @@
 #ifndef Outlaws_StdAfx_h
 #define Outlaws_StdAfx_h
 
-#ifdef MOD_PROJECT
-#define DLLFUNC __declspec(dllimport)
-#else
+#ifdef BUILDING_REASSEMBLY
 #define DLLFUNC __declspec(dllexport)
+#else
+#define DLLFUNC __declspec(dllimport)
 #endif
 
 #include <cstring>

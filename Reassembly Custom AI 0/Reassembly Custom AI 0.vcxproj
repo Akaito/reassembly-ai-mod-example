@@ -94,7 +94,7 @@
       <PrecompiledHeaderFile>game/StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
-      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;MOD_PROJECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -142,7 +142,7 @@
       <PrecompiledHeaderFile>game/StdAfx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
-      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;MOD_PROJECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PSAPI_VERSION=1;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
