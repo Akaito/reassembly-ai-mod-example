@@ -4,21 +4,41 @@
 How to use
 ----------
 
-1. Get https://github.com/Akaito/reassembly-ai-mod-example in any one of the following ways, putting the files anywhere convenient.
-	- Zip download: https://github.com/Akaito/reassembly-ai-mod-example/archive/master.zip
-	- HTTPS git clone: git clone https://github.com/Akaito/reassembly-ai-mod-example.git
-	- SSH git clone: git clone git@github.com:Akaito/reassembly-ai-mod-example.git
-	- Better yet, fork first, then clone.
-2. Open "Reassembly Custom AI 0.sln" in Visual Studio 2017 (free version works fine).
-3. If Visual Studio prompts you to install needed features for building C++ desktop programs, backup your settings and installed plugin choices and their settings, then allow the install.
+1. Fork https://github.com/Akaito/reassembly-ai-mod-example on GitHub.
+2. Clone your forked repo to your computer.
+3. Open "AiModExample.sln" in Visual Studio 2017 (free version works fine).
+4. If Visual Studio prompts you to install needed features for building C++ desktop programs, see "Visual Studio: building C++ desktop programs steps" below.
+5. If this isn't your only local (non-relocated) faction mod, see the steps for "Changing faction ID" below.
+	If you don't know what that relates to, you probably don't need to do that.
+6. Build the 32-bit Release configuration of the AI mod.
+	You'll find that it outputs mod files in `%USERPROFILE%/Saved Games/Reassembly/mods/`, in a folder named after the Visual Studio Solution.
+7. Run Reassembly.  You should see an "AiModExample" (or your solution name) mod in the "Mods" settings.
+8. In the sandbox, use "fleet 80" (or your faction ID, if you changed it) to try spawning your ship.
+9. While your ship is selected, use "debug ai" (a toggle) to see custom AIAction names on the ship, to confirm that the AI mod is active.
+10. When you make any changes and rebuild your AI DLL, relaunch Reassembly to get it reloaded.
+
+### Visual Studio: "building C++ desktop programs" steps.
+1. Backup your settings and installed plugin choices and their settings, then allow the install.
 	Be warned it can be a large download.  The backups were because if that install gets interrupted for any reason, you may need to repair VS, which wipes all that data completely.
 	- If that gets interrupted or you cancel the install, Visual Studio may stop working completely.  If that happens, run "Visual Studio Installer", then near your installed version, click "More", then "Repair" and let that work for a while.
-4. Build the 32-bit Release configuration of the AI mod.
-?. ((lua file editing; should we give a template in the AI mod repo?))
-?. ((Edit "%USERPROFILE%/Saved Games/Reassembly/mods/index.lua"))
-	Is index.lua used?
-?. ((Update mod-assets files?  Depends on how the user wants to do things.  What's the easiest way we can recommend?))
-	((User repo clone vs. not keeping own repo/history.  Probably want to have them modify mod-assets files.))
+
+### Changing faction ID
+Change the faction ID from 80 to **the same** other unique value in all of the following areas.
+All of these files can be found in `<mod-ai-repo>/mod-assets/`.
+If you already built the solution, it copied the files to `%USERPROFILE%/Saved Games/Reassembly/mods/<your-ai-mod-name>/`.
+Building tries to be very non-aggressive about overwriting files.  So if you already built the mod once, just go
+delete the files from that USERPROFILE directory, then *rebuild* the solution.  *Before* deleting those files,
+however, be sure you aren't losing any work if you did any work directly on those outputs.
+- factions.lua
+	- Line 5: Faction ID 80.
+	- Line 28: Faction ID at start of ship file name.
+- regions.lua
+	- Line 3: ident
+	- Line 5: faction
+	- Line 9: fleets
+- ships/*.lua
+	- Change leading "80" in filenames to your new faction ID.
+	- Line 3: faction (in each ship file).
 
 
 Files / directories
