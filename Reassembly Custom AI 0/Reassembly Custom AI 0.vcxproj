@@ -31,7 +31,7 @@
     <ProjectGuid>{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}</ProjectGuid>
     <RootNamespace>ReassemblyCustomAI0</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
-    <ProjectName>saiyan</ProjectName>
+    <ProjectName>VanillaModAi</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -142,8 +142,12 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>OpenGL32.lib;Glu32.lib;$(SolutionDir)win32\ReassemblyDevelop.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;Glu32.lib;$(SolutionDir)win32\ReassemblyDebug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Message>Copy mod files to their target for Reassembly to read.</Message>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -165,8 +169,12 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>OpenGL32.lib;Glu32.lib;$(SolutionDir)win32\ReassemblyDevelop.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;Glu32.lib;$(SolutionDir)win32\ReassemblyDebug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Message>Copy mod files to their target for Reassembly to read.</Message>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

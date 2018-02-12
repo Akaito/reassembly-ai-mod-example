@@ -13,7 +13,7 @@
 
     -- Faction-wide application of a particular AI.
     --   Must match a file in the "ai" folder (Visual Studio project name).
-    ainame="saiyan",
+    ainame="VanillaModAi",
 
     -- 0: Not a player-selectable faction (you probably don't want that).
     -- 1: Player-selectable *after* beating it in a random encounter.
