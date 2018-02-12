@@ -1,14 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gungine_ai", "Reassembly Custom AI 0\Reassembly Custom AI 0.vcxproj", "{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "saiyan", "Reassembly Custom AI 0\Reassembly Custom AI 0.vcxproj", "{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Develop|x64 = Develop|x64
+		Develop|x86 = Develop|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -17,6 +19,10 @@ Global
 		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Debug|x64.Build.0 = Debug|x64
 		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Debug|x86.ActiveCfg = Debug|Win32
 		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Debug|x86.Build.0 = Debug|Win32
+		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Develop|x64.ActiveCfg = Develop|x64
+		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Develop|x64.Build.0 = Develop|x64
+		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Develop|x86.ActiveCfg = Develop|Win32
+		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Develop|x86.Build.0 = Develop|Win32
 		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Release|x64.ActiveCfg = Release|x64
 		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Release|x64.Build.0 = Release|x64
 		{CCA56D2E-6432-4DDD-BED2-A46407D03EA1}.Release|x86.ActiveCfg = Release|Win32
@@ -24,5 +30,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AC5C7009-ACE6-4A53-80E5-278332D79126}
 	EndGlobalSection
 EndGlobal

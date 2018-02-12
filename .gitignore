@@ -1,5 +1,10 @@
+.*~
+*.vim
+
 .vs
 Debug
 Release
 
 *.user
+
+win32/ReassemblyDe*

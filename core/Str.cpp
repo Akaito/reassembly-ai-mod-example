@@ -688,7 +688,7 @@ std::string str_strftime(const char* fmt)
     return str_strftime(fmt, std::localtime(&now));
 }
 
-#ifndef MOD_PROJECT
+#ifdef BUILDING_REASSEMBLY
 std::string str_numeral_format(int num)
 {
     if (!str_equals(OLG_GetLanguage(), "en") || abs(num) >= 100)
