@@ -11,8 +11,8 @@ How to use
 4. If Visual Studio prompts you to install needed features for building C++ desktop programs, see "Visual Studio: building C++ desktop programs steps" below.
 5. If this isn't your only local (non-relocated) faction mod, see the steps for "Changing faction ID" below.
 	If you don't know what that relates to, you probably don't need to do that.
-6. Rename the "VanillaAiMod" project in Visual Studio.
-	Use a filesystem-friendly name, as this affects output directories.
+6. Rename the "AiModExample" solution and "VanillaAiMod" project in Visual Studio.
+	Use filesystem-friendly names, as these affect output directories.
 7. Build the 32-bit (x86) Release configuration of the AI mod.
 	You'll find that it outputs mod files in `%USERPROFILE%/Saved Games/Reassembly/mods/`, in a folder named after the Visual Studio Solution.
 8. Run Reassembly.  You should see an "AiModExample" (or your solution name) mod in the "Mods" settings.
@@ -32,14 +32,14 @@ If you already built the solution, it copied the files to `%USERPROFILE%/Saved G
 Building tries to be very non-aggressive about overwriting files.  So if you already built the mod once, just go
 delete the files from that USERPROFILE directory, then *rebuild* the solution.  *Before* deleting those files,
 however, be sure you aren't losing any work if you did any work directly on those outputs.
-- factions.lua
+- mod-assets/factions.lua
 	- Line 5: Faction ID 80.
 	- Line 28: Faction ID at start of ship file name.
-- regions.lua
+- mod-assets/regions.lua
 	- Line 3: ident
 	- Line 5: faction
 	- Line 9: fleets
-- ships/*.lua
+- mod-assets/ships/*.lua
 	- Change leading "80" in filenames to your new faction ID.
 	- Line 3: faction (in each ship file).
 
@@ -75,3 +75,8 @@ Files / directories
 	"Build | Clean" won't delete files if VS doesn't create them (which, after
 	a rename, it doesn't anymore).
 
+- Sanity-check: make sure you're affecting the files you think you are.
+	Rename `%USERPROFILE%/Saved Games/Reassembly/mods/<your-mod-name>` to
+	`%USERPROFILE%/Saved Games/Reassembly/mods/<your-mod-name>-backup`.
+	Then in Visual Studio, Build -> Rebuild Project.
+	Run Reassembly again, and observe your mod's ships, names, behavior, etc.
