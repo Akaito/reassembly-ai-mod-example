@@ -4,8 +4,8 @@
   --   in-game values from colliding.  You probably don't need to change this.
   80 = {
     -- Faction default colors, if you feel like changing them.
-    color0=0x000080,
-    color1=0x0302b3,
+    color0=0x0302b3,
+    color1=0x000080,
     primaries=2,
 
     -- ((TODO))
@@ -21,10 +21,10 @@
     playable=2,
 
     -- Rename the mod faction as you like.
-    name=_("AI Mod Examples Faction"),
+    name=_("Vanilla AI Mod"),
 
     -- Must match a ship name in the "ships" folder.
     --   The numeric prefix is this faction's ID number.
-    start="80_RocketBooster"
+    start="80_interceptor"
   }
 }
