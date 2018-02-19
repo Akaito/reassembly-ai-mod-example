@@ -11,12 +11,14 @@ How to use
 4. If Visual Studio prompts you to install needed features for building C++ desktop programs, see "Visual Studio: building C++ desktop programs steps" below.
 5. If this isn't your only local (non-relocated) faction mod, see the steps for "Changing faction ID" below.
 	If you don't know what that relates to, you probably don't need to do that.
-6. Build the 32-bit Release configuration of the AI mod.
+6. Rename the "VanillaAiMod" project in Visual Studio.
+	Use a filesystem-friendly name, as this affects output directories.
+7. Build the 32-bit (x86) Release configuration of the AI mod.
 	You'll find that it outputs mod files in `%USERPROFILE%/Saved Games/Reassembly/mods/`, in a folder named after the Visual Studio Solution.
-7. Run Reassembly.  You should see an "AiModExample" (or your solution name) mod in the "Mods" settings.
-8. In the sandbox, use "fleet 80" (or your faction ID, if you changed it) to try spawning your ship.
-9. While your ship is selected, use "debug ai" (a toggle) to see custom AIAction names on the ship, to confirm that the AI mod is active.
-10. When you make any changes and rebuild your AI DLL, relaunch Reassembly to get it reloaded.
+8. Run Reassembly.  You should see an "AiModExample" (or your solution name) mod in the "Mods" settings.
+9. In the sandbox, use "fleet 80" (or your faction ID, if you changed it) to try spawning your ship.
+10. While your ship is selected, use "debug ai" (a toggle) to see custom AIAction names on the ship, to confirm that the AI mod is active.
+11. When you make any changes and rebuild your AI DLL, relaunch Reassembly to get it reloaded.
 
 ### Visual Studio: "building C++ desktop programs" steps.
 1. Backup your settings and installed plugin choices and their settings, then allow the install.
