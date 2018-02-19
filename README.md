@@ -44,16 +44,20 @@ however, be sure you aren't losing any work if you did any work directly on thos
 Files / directories
 -------------------
 
-- game:
-	Required headers from Reassembly's code.
-- [glm](https://glm.g-truc.net/0.9.8/index.html):
-	OpenGL Mathematics library code.
 - mod-assets:
 	Faction definition(s) (factions.lua), ships, AI selection, etc.
 	((TODO: Add preview.png))
+- Anisoptera/Reassembly headers:
+	- core: similar to [outlaws-core](https://github.com/manylegged/outlaws-core) library.
+	- game: Reassembly-specific headers.
+- Non-Anisoptera/-Reassembly headers:
+	- [chipmunk](http://chipmunk-physics.net/): Chipmunk open-source physics library.
+	- [glm](https://glm.g-truc.net/0.9.8/index.html): OpenGL Mathematics lib code.
+	- [re2](https://github.com/google/re2): Regular expression headers.
+	- vendor/[SDL2](https://www.libsdl.org/): Simple Directmedia Layer 2 headers.
 
 
-"It's broken"/misbehaving
+"It's broken" / misbehaving
 -------------------------
 
 - Are you accidentally subscribed to your own mod in Steam?
