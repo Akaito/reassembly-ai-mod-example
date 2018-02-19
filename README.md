@@ -5,6 +5,7 @@ How to use
 ----------
 
 1. Fork https://github.com/Akaito/reassembly-ai-mod-example on GitHub.
+	Rename the repo after, too, if you don't want it to be "reassembly-ai-mod-example".
 2. Clone your forked repo to your computer.
 3. Open "AiModExample.sln" in Visual Studio 2017 (free version works fine).
 4. If Visual Studio prompts you to install needed features for building C++ desktop programs, see "Visual Studio: building C++ desktop programs steps" below.
