@@ -532,6 +532,80 @@ DLLFACE struct ABudReproduce final : public AIAction {
     DLLFACE virtual uint update(uint blockedLanes);
 };
 
+DLLFACE struct AWeapons final : public AIAction {
+
+    int  enabled    = 0;        // number of weapons enabled
+    bool isFallback = false;
+
+    AWeapons(AI* ai) : AIAction(ai, LANE_SHOOT) {}
+
+    DLLFACE static bool supportsConfig(const AICommandConfig& cfg);
+    DLLFACE virtual uint update(uint blockedLanes);
+
+    virtual string toStringEx() const
+    {
+        return str_format("enabled %d at %s target", enabled, isFallback ? "fallback" : "main");
+    }
+};
+
+// set fallback target - i.e. incoming missile
+DLLFACE struct AFallbackTarget final : public AIAction {
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.hasWeapons; }
+    AFallbackTarget(AI* ai) : AIAction(ai, LANE_TARGET, PRI_ALWAYS) {}
+
+    DLLFACE virtual uint update(uint blockedLanes);
+};
+
+// target based on faction: attack enemy ships
+DLLFACE struct ATargetEnemy final : public ATargetBase {
+
+    ATargetEnemy(AI* ai) : ATargetBase(ai) { }
+
+    virtual uint update(uint blockedLanes)
+    {
+        return findSetTarget();
+    }
+};
+
+DLLFACE struct AAvoidCluster final : public AIAction {
+
+    vector<Obstacle> obstacles;
+    snConfig         config;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.isMobile; }
+
+    AAvoidCluster(AI* ai) : AIAction(ai, LANE_MOVEMENT, PRI_ALWAYS) {}
+
+    DLLFACE void generateClusterObstacleList(Block* command);
+    DLLFACE virtual uint update(uint blockedLanes);
+};
+
+DLLFACE struct AAttack final : public APositionBase {
+
+    snConfigDims targetCfg;
+
+    AAttack(AI* ai): APositionBase(ai) { }
+
+    DLLFACE static bool supportsConfig(const AICommandConfig& cfg);
+    DLLFACE virtual uint update(uint blockedLanes);
+
+    virtual const char* toPrettyString() const { return status; }
+
+};
+
+DLLFACE struct AInvestigate final : public AIAction {
+
+    APath       path;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return APath::supportsConfig(cfg); }
+    virtual void render(void* line) const { path.render(line); }
+
+    AInvestigate(AI* ai) : AIAction(ai, LANE_MOVEMENT), path(ai) { }
+
+    DLLFACE virtual uint update(uint blockedLanes);
+};
+
 // estimate best overall direction for avoiding obstacles
 DLLFACE float2 getTargetDirection(const AI* ai, const vector<Obstacle> &obs);
 
