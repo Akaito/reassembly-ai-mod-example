@@ -39,9 +39,9 @@ using std::vector;
 using std::swap;
 
 // last chance to catch log string before it hits the OS layer
-void Report(string &&str);
+DLLFACE void Report(string &&str);
 DLLFACE void Report(const string &str);
-void Report(const char* str);
+DLLFACE void Report(const char* str);
 
 inline void vReportf(const char *format, va_list vl)  __printflike(1, 0);
 
