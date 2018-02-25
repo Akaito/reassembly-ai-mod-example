@@ -19,16 +19,16 @@ struct SaveData;
 
 #ifdef _WIN32
 typedef HMODULE DllHandle;
-typedef AIAction* (WINAPI *ModCreateAiAction)(const char* actionType, AI* ai);
+typedef bool (WINAPI *ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
 #else
 typedef nullptr_t DllHandle;
-typedef AIAction* (*ModCreateAiAction)(const char* actionType, AI* ai);
+typedef bool (*ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
 #endif
 
 struct AIModData {
     //AI_t              aiid = 0;
-    DllHandle         dll = nullptr;
-    ModCreateAiAction createAction = nullptr;
+    DllHandle          dll = nullptr;
+    ModCreateAiActions createActions = nullptr;
 
     AIModData() {}
 };

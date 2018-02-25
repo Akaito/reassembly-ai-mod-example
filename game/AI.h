@@ -2,18 +2,21 @@
 #ifndef _AI_H
 #define _AI_H
 
-// #define CHRIS_DLL_TEST (IS_DEVEL)
+//#define CHRIS_DLL_TEST (IS_DEVEL)
 #define CHRIS_DLL_TEST (1)
 
 #include "AI_modapi.h"
 #include "Nav.h"
 #include "Types.h"
 
-DLLFUNC extern float kAITimeStep;
-DLLFUNC extern float kAIBigTimeStep;
-DLLFUNC extern float kAISuperTimeStep;
+DLLFACE extern float kAITimeStep;
+DLLFACE extern float kAIBigTimeStep;
+DLLFACE extern float kAISuperTimeStep;
 
-DLLFUNC extern int kAIPathMaxQueries;
+DLLFACE extern int   kAIPathMaxQueries;
+
+DLLFACE extern int   kAIEnableNoResReproduce;
+
 
 template <typename Vtx> struct LineMesh;
 template <typename TriV, typename LineV> struct MeshPair;
@@ -26,7 +29,7 @@ struct FiringFilter;
 struct OneMod;
 struct WeaponGroup;
 
-DLLFUNC float2 directionForFixed(
+DLLFACE float2 directionForFixed(
     const BlockCluster *cluster,
     float2 targetPos,
     float2 targetVel,
@@ -35,10 +38,10 @@ DLLFUNC float2 directionForFixed(
 
 #ifdef _WIN32
 typedef HMODULE DllHandle;
-typedef AIAction* (WINAPI *ModCreateAiAction)(const char* actionType, AI* ai);
+typedef bool (WINAPI *ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
 #else
 typedef nullptr_t DllHandle;
-typedef AIAction* (*ModCreateAiAction)(const char* actionType, AI* ai);
+typedef bool (*ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
 #endif
 
 struct AIActionList {
@@ -116,7 +119,7 @@ struct AttackCapabilities {
     float  healthRegen = 0.f;
     
     vector< pair<float, float> > rangeDmg;
-    DLLFUNC float getDpsAtRange(float range) const;
+    DLLFACE float getDpsAtRange(float range) const;
     
     bool   initialized = false;
 };
@@ -151,7 +154,7 @@ struct FiringData {
     bool         useTurretTargetAngle = false;
     FiringData() {}
     FiringData(const watch_ptr<const Block> &bl) : FiringData(bl.get()) {}
-    DLLFUNC FiringData(const Block *bl);
+    DLLFACE FiringData(const Block *bl);
 };
 
 struct WeaponGroup {
@@ -197,7 +200,7 @@ private:
     bool                          m_enemiesQueried = false;
     bool                          m_alliesQueried  = false;
     AIActionList                  m_actions;
-    ModCreateAiAction             m_aiModCreateAction = nullptr;
+    ModCreateAiActions            m_aiModCreateActions = nullptr;
     BlockList                     m_enemies;
     BlockList                     m_allies;
     vector<ResourcePocket*>       m_visibleResources;
@@ -243,23 +246,26 @@ public:
     AutofireData                    autofire;
 
     void             setMod(const AIModData* modApi, bool shouldResetActions);
-    DLLFUNC ObstacleQuery&    getQuery();
-    DLLFUNC bool              isBigUpdate() const;
+    DLLFACE ObstacleQuery&    getQuery();
+    DLLFACE bool              isBigUpdate() const;
     bool                      isSuperUpdate() const;
-    DLLFUNC const BlockList&  getEnemies();
-    DLLFUNC const BlockList&  getAllies();
+    DLLFACE const BlockList&  getEnemies();
+    DLLFACE const BlockList&  getAllies();
     float                     getEnemyDeadliness();
     float                     getAllyDeadliness();
     float                     getEnemyAllyRatio();
     vector<ResourcePocket*>&  getVisibleResources();
-    DLLFUNC const AttackCapabilities& getAttackCaps();
+    DLLFACE const AttackCapabilities& getAttackCaps();
     const AttackCapabilities& getCachedAttackCaps() const { return m_attackCaps; }
     const AICommandConfig&    getConfig() const { return m_config; }
-    DLLFUNC int               fireWeaponsAt(FiringData &data);
+    DLLFACE int               fireWeaponsAt(FiringData &data);
+    DLLFACE Block *           enumWeapons(int * indexInOut);
     bool                      isValidTarget(const Block *bl) const;
-    DLLFUNC void              setTarget(const Block* bl, AIMood mood);
-    DLLFUNC float2            estimateTargetPos() const;
-    DLLFUNC bool              canEstimateTargetPos() const;
+    DLLFACE void              setTarget(const Block* bl, AIMood mood);
+    DLLFACE float2            estimateTargetPos() const;
+    DLLFACE bool              canEstimateTargetPos() const;
+    DLLFACE void              addAction(AIAction * action);
+    const AICommandConfig &   commandConfig() { return m_config;  }
     float2                    getTargetPos() const;
     const Block*              getTarget() const;
 
@@ -308,7 +314,7 @@ struct APositionBase : public AIAction
 
     APositionBase(AI* ai): AIAction(ai, LANE_MOVEMENT) { }
 
-    DLLFUNC bool isTargetObstructed(const Block *target=NULL);
+    DLLFACE bool isTargetObstructed(const Block *target=NULL);
 };
 
 
@@ -318,9 +324,9 @@ struct Obstacle {
     float damage;               // as a percentage of the ship health!!!!
     bool  canShootDown;
 
-    DLLFUNC Obstacle(const BlockCluster &bc, float radius, float dmg) NOEXCEPT;
-    DLLFUNC Obstacle(const Projectile &pr, float radius, float dmg) NOEXCEPT;
-    DLLFUNC bool isDangerous(float2 clPos, float2 clVel) const;
+    DLLFACE Obstacle(const BlockCluster &bc, float radius, float dmg) NOEXCEPT;
+    DLLFACE Obstacle(const Projectile &pr, float radius, float dmg) NOEXCEPT;
+    DLLFACE bool isDangerous(float2 clPos, float2 clVel) const;
 };
 
 struct ObstacleQuery
@@ -332,9 +338,9 @@ private:
 
 public:
 
-    DLLFUNC const vector<Obstacle> &getLast() const;
-    DLLFUNC const vector<Obstacle> &queryObstacles(Block* command, bool blocksOnly=false);
-    DLLFUNC const vector<Block*> &queryBlockObstacles(Block *command);
+    DLLFACE const vector<Obstacle> &getLast() const;
+    DLLFACE const vector<Obstacle> &queryObstacles(Block* command, bool blocksOnly=false);
+    DLLFACE const vector<Block*> &queryBlockObstacles(Block *command);
     int cullForDefenses(const AttackCapabilities &caps);
 
 };
@@ -371,7 +377,7 @@ class PathFinder {
 
 public:
 
-    DLLFUNC PathFinder();
+    DLLFACE PathFinder();
 
     ~PathFinder()
     {
@@ -390,7 +396,7 @@ struct AMove final : public AIAction {
 
     static bool supportsConfig(const AICommandConfig& cfg) { return cfg.isMobile; }
 
-    DLLFUNC AMove(AI* ai);
+    DLLFACE AMove(AI* ai);
     AMove(AI* ai, float2 pos, float r);
 
     void setMoveDest(float2 pos, float r);
@@ -425,20 +431,112 @@ struct APath final : public AIAction {
     }
 
 
-    DLLFUNC void setPathDest(float2 p, float r);
+    DLLFACE void setPathDest(float2 p, float r);
 
     bool isAtDest() const;
 
-    DLLFUNC virtual uint update(uint blockedLanes);
+    DLLFACE virtual uint update(uint blockedLanes);
 
-    DLLFUNC virtual void render(void* lineVoid) const;
+    DLLFACE virtual void render(void* lineVoid) const;
+};
+
+// stock AAvoidWeapon action
+DLLFACE struct AAvoidWeapon final : public AIAction {
+
+    snConfig      config;
+
+    int           culled = 0;
+    int           count = 0;
+
+    static bool supportsConfig(const AICommandConfig& cfg) { return cfg.isMobile; }
+    virtual const char* toPrettyString() const { return _("Dodging"); }
+    virtual string toStringEx() const { return str_format("Culled %d/%d", culled, count); }
+
+    AAvoidWeapon(AI* ai) : AIAction(ai, LANE_MOVEMENT, PRI_ALWAYS) { }
+
+    DLLFACE virtual uint update(uint blockedLanes);
+};
+
+DLLFACE struct AHealers final : public AIAction {
+    
+    bool fixedHealer = false;
+
+    AHealers(AI* ai) : AIAction(ai, LANE_HEALER) { }
+
+    static bool supportsConfig(const AICommandConfig& cfg)
+    {
+        return cfg.hasHealers;
+    }
+
+    DLLFACE virtual uint update(uint blockedLanes);
+
+    virtual const char* toPrettyString() const { return status; }
+
+};
+
+struct AHeal final : public AIAction {
+
+    AHeal(AI* ai) : AIAction(ai, LANE_ASSEMBLE) {}
+
+    DLLFACE static bool supportsConfig(const AICommandConfig& cfg);
+
+    bool valid   = true;
+    bool matches = true;
+
+    DLLFACE virtual uint update(uint blockedLanes);
+};
+
+DLLFACE struct AScavengeWeapon final : public AIAction {
+
+    std::set<uint> fitFailed;
+
+    DLLFACE static bool supportsConfig(const AICommandConfig& cfg);
+
+    AScavengeWeapon(AI* ai) : AIAction(ai, LANE_ASSEMBLE) {}
+
+    virtual void onReset()
+    {
+        fitFailed.clear();
+    }
+
+    DLLFACE virtual uint update(uint blockedLanes);
+};
+
+DLLFACE struct AMetamorphosis final : public AIAction {
+
+    const char *which = "None";
+
+    AMetamorphosis(AI* ai) : AIAction(ai, LANE_ASSEMBLE) {}
+
+    DLLFACE static bool supportsConfig(const AICommandConfig& cfg);
+    DLLFACE virtual void onReset();
+    DLLFACE virtual uint update(uint blockedLanes);
+
+    virtual string toStringEx() const
+    {
+        return str_format("picked %s: %s", which, status);
+    }
+};
+
+DLLFACE struct ABudReproduce final : public AIAction {
+
+    float          childResTarget;
+    float          needRes;
+    vector<Block*> followers;
+
+    ABudReproduce(AI* ai) : AIAction(ai, LANE_ASSEMBLE),
+                                 childResTarget(0), needRes(0) {}
+
+    DLLFACE static bool supportsConfig(const AICommandConfig& cfg);
+    DLLFACE virtual void onReset();
+    DLLFACE virtual uint update(uint blockedLanes);
 };
 
 // estimate best overall direction for avoiding obstacles
-DLLFUNC float2 getTargetDirection(const AI* ai, const vector<Obstacle> &obs);
+DLLFACE float2 getTargetDirection(const AI* ai, const vector<Obstacle> &obs);
 
 //AAvoidWeapon does not always know what the best direction is, and will only make small adjustments anyway
-DLLFUNC bool velocityObstacles(
+DLLFACE bool velocityObstacles(
     float2 *velOut,
     float* pBestDamage,
     float2 position,

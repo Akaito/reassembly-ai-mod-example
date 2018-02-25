@@ -5,6 +5,11 @@
 #include <game/Blocks.h>
 
 
+#define ADD_ACTION(TYPE, ...)                       \
+    if (TYPE::supportsConfig(ai->getConfig()))          \
+        ai->addAction(new TYPE(ai, __VA_ARGS__));
+
+
 struct AAttack_ModStarter final : public APositionBase {
 
     snConfigDims targetCfg;
@@ -413,27 +418,25 @@ struct ATargetEnemy_ModStarter final : public ATargetBase {
 //=============================================================================
 // Exported functions
 //=============================================================================
-/*
-bool SupportsConfig(const char * name, const AICommandConfig& cfg)
-{
-    if (!std::strcmpi(name, "AWeapons"))
-        return AWeaponsExample::supportsConfig(cfg);
-    return false;
-}
-*/
 
-AIAction * CreateAiAction(const char * name, AI* ai) {
-    if (!_strcmpi(name, "AAttack"))
-        return new AAttack_ModStarter(ai);
-    if (!_strcmpi(name, "AAvoidCluster"))
-        return new AAvoidCluster_ModStarter(ai);
-    if (!_strcmpi(name, "AFallbackTarget"))
-        return new AFallbackTarget_ModStarter(ai);
-    if (!_strcmpi(name, "AInvestigate"))
-        return new AInvestigate_ModStarter(ai);
-    if (!_strcmpi(name, "ATargetEnemy"))
-        return new ATargetEnemy_ModStarter(ai);
-    if (!_strcmpi(name, "AWeapons"))
-        return new AWeapons_ModStarter(ai);
-    return nullptr;
+// tournament mode AI
+bool CreateAiActions(int versionMajor, int versionMinor, AI* ai) {
+    versionMajor;
+    versionMinor;
+
+    const AICommandConfig & config = ai->getConfig();
+    if (config.isMobile >= 2 && (config.flags & SerialCommand::DODGES)) {
+        ADD_ACTION(AAvoidWeapon);
+    }
+
+    ADD_ACTION(AWeapons_ModStarter);
+
+    ADD_ACTION(AFallbackTarget_ModStarter);
+    ADD_ACTION(ATargetEnemy_ModStarter);
+    ADD_ACTION(AAvoidCluster_ModStarter);
+    ADD_ACTION(AAttack_ModStarter);
+    ADD_ACTION(AHealers); // notice this isn't used by the interceptor; see macro definition
+    ADD_ACTION(AInvestigate_ModStarter);
+
+    return true; // we handled it; no need for default AI actions
 }

@@ -112,15 +112,15 @@ struct AIAction {
 
     static bool supportsConfig(const AICommandConfig& cfg) { return true; }
 
-    DLLFUNC uint noAction(const char* reason);
+    DLLFACE uint noAction(const char* reason);
 
     string toString() const;
 
     virtual void render(void* line) const { line; }
 
     // helper
-    DLLFUNC const BlockCluster* getCluster() const;
-    DLLFUNC float2 getClusterPos() const;
+    DLLFACE const BlockCluster* getCluster() const;
+    DLLFACE float2 getClusterPos() const;
     float  getClusterBRadius() const;
 
     bool isDestObstructed(float2 dest, uint ignoreFaction, float avoidDebrisRatio) const;
@@ -128,9 +128,9 @@ struct AIAction {
     // repath if we hit something (bigger than kAvoidDebrisRadiusRatio)
     bool needsRepath() const;
 
-    DLLFUNC AIMood isActivelyHostile(const Block* target) const;
+    DLLFACE AIMood isActivelyHostile(const Block* target) const;
 
-    DLLFUNC float getWaypointRadius() const;
+    DLLFACE float getWaypointRadius() const;
     
 };
 
@@ -167,13 +167,13 @@ struct ATargetBase : public AIAction {
 
     ATargetBase(AI* ai) : AIAction(ai, LANE_TARGET, PRI_ALWAYS) {}
 
-    DLLFUNC virtual AIMood acceptTarget(const Block* target) const;
+    DLLFACE virtual AIMood acceptTarget(const Block* target) const;
 
-    DLLFUNC Target testAcceptTarget(const Block *tgt) const;
+    DLLFACE Target testAcceptTarget(const Block *tgt) const;
 
-    DLLFUNC float targetDistanceMetric(float2 defPos, const Block *tgt) const;
+    DLLFACE float targetDistanceMetric(float2 defPos, const Block *tgt) const;
 
-    DLLFUNC uint findSetTarget();
+    DLLFACE uint findSetTarget();
 };
 
 

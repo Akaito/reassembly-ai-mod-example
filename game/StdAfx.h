@@ -10,9 +10,9 @@
 #define Outlaws_StdAfx_h
 
 #ifdef BUILDING_REASSEMBLY
-#define DLLFUNC __declspec(dllexport)
+#define DLLFACE __declspec(dllexport)
 #else
-#define DLLFUNC __declspec(dllimport)
+#define DLLFACE __declspec(dllimport)
 #endif
 
 #include <cstring>
@@ -165,8 +165,8 @@ struct LogRecorder {
 #define FORMAT_ARG
 #endif
 
-DLLFUNC const char* gettext_(const char* key) FORMAT_ARG;
-DLLFUNC const char* gettext_(const char* eng, const char* key) FORMAT_ARG;
+DLLFACE const char* gettext_(const char* key) FORMAT_ARG;
+DLLFACE const char* gettext_(const char* eng, const char* key) FORMAT_ARG;
 const char* gettext_(const string &key);
 lstring gettext_(lstring key);
 #define _(X) gettext_(X)

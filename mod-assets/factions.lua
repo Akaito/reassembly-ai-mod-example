@@ -9,7 +9,7 @@
     primaries=2,
 
     -- ((TODO))
-    aiflags=FLOCKING|AGGRESSIVE|WANDER|FORGIVING|TRACTOR_TRANSIENT|DODGES,
+	aiflags=                    WANDER|FORGIVING|TRACTOR_TRANSIENT|DODGES|SOCIAL,
 
     -- Faction-wide application of a particular AI.
     --   Must match a file in the "ai" folder (Visual Studio project name).

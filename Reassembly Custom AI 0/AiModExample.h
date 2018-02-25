@@ -8,8 +8,6 @@
 
 extern "C" {
 
-// __declspec(dllexport) bool SupportsConfig(const char * name, const AICommandConfig& cfg);
-
-__declspec(dllexport) AIAction * CreateAiAction(const char * name, AI* ai);
+__declspec(dllexport) bool CreateAiActions(int versionMajor, int versionMinor, AI* ai);
 
 } // extern "C"

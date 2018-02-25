@@ -428,19 +428,19 @@ struct SerialBlock final {
 
     // more helper fuctions, abstract details
     float weaponDamagePerSec() const;
-    float weaponRange(Feature_t ftrs=0) const;
+    DLLFACE float weaponRange(Feature_t ftrs=0) const;
     float weaponVel() const;
     bool  weaponSpreads() const;
     float weaponEfficiency() const;
-    bool  isFireableFixed() const;
-    bool  isFireable() const;
-    bool  isWeapon() const;
-    bool  isHealer() const;
-    bool  isTurret() const;
+    DLLFACE bool  isFireableFixed() const;
+    DLLFACE bool  isFireable() const;
+    DLLFACE bool  isWeapon() const;
+    DLLFACE bool  isHealer() const;
+    DLLFACE bool  isTurret() const;
     int deadliness() const;
     int growResource() const { return max(1, deadliness()); }
     int getPlayerEnergy() const;
-    DLLFUNC bool isTransient() const;
+    DLLFACE bool isTransient() const;
     bool isTypeDefault() const;
 
     float getArea() const { return spec().area; }

@@ -125,7 +125,7 @@ struct BlockCluster final : public Body {
     bool   hasCommand()          const;
     ClusterList&       getSubclusters()       { return m_subclusters; }
     const ClusterList& getSubclusters() const { return m_subclusters; }
-    DLLFUNC int isMobile() const;
+    DLLFACE int isMobile() const;
     ClusterClass getClass() const;
     void overwriteFromId();
 
@@ -251,7 +251,7 @@ public:
     void getNavConfig(snConfig* c) const;
 
     // return a bounding circle outside of which no sensors can detect
-    DLLFUNC float getSensorRadius() const;
+    DLLFACE float getSensorRadius() const;
 
     // return a bounding circle inside of which at least one tractor can collect
     float getTractorBRadius() const { return m_tractorBRadius; }
@@ -478,7 +478,7 @@ struct Block final : public Watchable {
     void onClusterInit();
     float2 getClusterPos() const { return cluster->getAbsolutePos(); }
     float getClusterBRadius() const { return cluster->getBRadius(); }
-    DLLFUNC int getBlueprintDeadliness() const;
+    DLLFACE int getBlueprintDeadliness() const;
 
     bool isSensorVisible(const BlockCluster* cl) const;
     
@@ -523,7 +523,7 @@ struct Block final : public Watchable {
     // return true if firing weapon now will hit target, assuming linear motion
     bool isWeaponAimed(const FiringData &target) const;
 
-    float2 weaponDirForTarget(float2 tpos, float2 tvel) const;
+    DLLFACE float2 weaponDirForTarget(float2 tpos, float2 tvel) const;
     float weaponAngleForTarget(float2 tpos, float2 tvel) const { return v2a(weaponDirForTarget(tpos, tvel)); }
 
     // actually enable weapon if it would hit target
@@ -729,7 +729,7 @@ public:
     float  getAbsoluteAngle() const { return sb.angle + cluster->getAbsoluteAngle(); }
     float2 getAbsoluteRot() const { return angleToVector(getAbsoluteAngle()); }
     float  getRenderAngle() const { return sb.angle + cluster->getRenderAngle(); }
-    DLLFUNC void   getNavConfig(snConfig* c) const;
+    DLLFACE void   getNavConfig(snConfig* c) const;
 
     float2 getPortAbsolutePos(uint i) const
     {
@@ -833,7 +833,7 @@ public:
     float  getWeaponRange() const;
     float  getWeaponVel() const;
     float  getWeaponPeriod() const;
-    void   setWeaponEnabled(bool enable);
+    DLLFACE void   setWeaponEnabled(bool enable); // TODO : UN-EXPORT THIS: Super-easy to cheat with it!
 
     float2 getLaunchVel() const;
     bool   isLaunchEnoughRes() const;
