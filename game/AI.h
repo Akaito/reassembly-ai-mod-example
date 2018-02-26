@@ -606,6 +606,18 @@ DLLFACE struct AInvestigate final : public AIAction {
     DLLFACE virtual uint update(uint blockedLanes);
 };
 
+DLLFACE struct AWander final : public AIAction {
+
+    AMove move;
+
+    DLLFACE static bool supportsConfig(const AICommandConfig& cfg);
+    DLLFACE float getMoveRad() const;
+
+    AWander(AI* ai) : AIAction(ai, LANE_MOVEMENT), move(ai) { }
+
+    DLLFACE virtual uint update(uint blockedLanes);
+};
+
 // estimate best overall direction for avoiding obstacles
 DLLFACE float2 getTargetDirection(const AI* ai, const vector<Obstacle> &obs);
 
