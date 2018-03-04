@@ -10,6 +10,7 @@
 #define __Outlaws__Ships__
 
 #include "Blocks.h"
+#include "AI_modapi.h"
 
 extern int kExtraShipsFaction;
 struct OneMod;
@@ -17,18 +18,13 @@ struct ParserLocation;
 struct LogRecorder;
 struct SaveData;
 
-#ifdef _WIN32
-typedef HMODULE DllHandle;
-typedef bool (WINAPI *ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
-#else
-typedef nullptr_t DllHandle;
-typedef bool (*ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
-#endif
-
 struct AIModData {
-    //AI_t              aiid = 0;
-    DllHandle          dll = nullptr;
-    ModCreateAiActions createActions = nullptr;
+    //AI_t                aiid          = 0;
+    DllHandle           dll           = nullptr;
+    int                 versionMajor  = -1;
+    int                 versionMinor  = -1;
+    Mod_GetApiVersion   getApiVersion = nullptr;
+    Mod_CreateAiActions createActions = nullptr;
 
     AIModData() {}
 };

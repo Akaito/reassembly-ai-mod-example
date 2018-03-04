@@ -8,6 +8,7 @@
 
 extern "C" {
 
-__declspec(dllexport) bool CreateAiActions(int versionMajor, int versionMinor, AI* ai);
+__declspec(dllexport) void GetApiVersion(int * major, int * minor);
+__declspec(dllexport) bool CreateAiActions(AI* ai);
 
 } // extern "C"

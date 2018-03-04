@@ -36,14 +36,6 @@ DLLFACE float2 directionForFixed(
     const FiringFilter &filter
 );
 
-#ifdef _WIN32
-typedef HMODULE DllHandle;
-typedef bool (WINAPI *ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
-#else
-typedef nullptr_t DllHandle;
-typedef bool (*ModCreateAiActions)(int versionMajor, int versionMinor, AI* ai);
-#endif
-
 struct AIActionList {
 
     vector<AIAction*> lastActions;
@@ -200,7 +192,7 @@ private:
     bool                          m_enemiesQueried = false;
     bool                          m_alliesQueried  = false;
     AIActionList                  m_actions;
-    ModCreateAiActions            m_aiModCreateActions = nullptr;
+    Mod_CreateAiActions           m_aiModCreateActions = nullptr;
     BlockList                     m_enemies;
     BlockList                     m_allies;
     vector<ResourcePocket*>       m_visibleResources;

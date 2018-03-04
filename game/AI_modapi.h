@@ -52,6 +52,16 @@ struct AICommandConfig;
 struct Block;
 struct BlockCluster;
 
+#ifdef _WIN32
+typedef HMODULE DllHandle;
+typedef void (WINAPI *Mod_GetApiVersion)(int * major, int * minor);
+typedef bool (WINAPI *Mod_CreateAiActions)(AI* ai);
+#else
+typedef nullptr_t DllHandle;
+typedef void (*Mod_GetApiVersion)(int * major, int * minor);
+typedef bool (*Mod_CreateAiActions)(AI* ai);
+#endif
+
 enum AIMood { OFFENSIVE = 1,           // initiating combat
               NEUTRAL   = 0,           // no combat
               DEFENSIVE = -1 };        // only fighting because being attacked

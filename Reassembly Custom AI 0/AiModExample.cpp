@@ -419,11 +419,13 @@ struct ATargetEnemy_ModStarter final : public ATargetBase {
 // Exported functions
 //=============================================================================
 
-// tournament mode AI
-bool CreateAiActions(int versionMajor, int versionMinor, AI* ai) {
-    versionMajor;
-    versionMinor;
+void GetApiVersion(int * major, int * minor) {
+    *major = 1;
+    *minor = 0;
+}
 
+// tournament mode AI
+bool CreateAiActions(AI* ai) {
     const AICommandConfig & config = ai->getConfig();
     if (config.isMobile >= 2 && (config.flags & SerialCommand::DODGES)) {
         ADD_ACTION(AAvoidWeapon);
