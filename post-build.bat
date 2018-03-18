@@ -29,7 +29,8 @@ if "%1"=="" (
 ::   It *is* supposed to be against "Release" with no backslash.
 ::   Otherwise robocopy gets horribly confused by the "\\" since
 ::   "%~dp0" has a trailing backslash.
-robocopy "%~dp0Release" %MY_AI_OUTPUT% *.dll *.pdb /FP
+:: /FP: "include Full Pathname of files in the output."
+robocopy "%~dp0%~2" %MY_AI_OUTPUT% *.dll *.pdb /FP
 :: errorlevel 1: did something (copied some stuff)
 if errorlevel 1 goto robocopy_success
 :: errorlevel 0: did nothing (all skipped)
