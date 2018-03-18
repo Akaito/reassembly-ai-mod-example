@@ -18,6 +18,8 @@ struct ParserLocation;
 struct LogRecorder;
 struct SaveData;
 
+#define CHRIS_DLL_TEST (1)
+
 struct AIModData {
     //AI_t                aiid          = 0;
     DllHandle           dll           = nullptr;

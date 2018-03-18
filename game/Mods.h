@@ -3,6 +3,7 @@
 #define THE_MODS_H
 
 #include "SerialBlock.h"
+#include "Steam.h"
 
 static const int kModBlockReloc0Max = 200;
 static const int kModBlockReloc1Min = 17000;

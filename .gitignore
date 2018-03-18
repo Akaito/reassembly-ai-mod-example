@@ -3,6 +3,7 @@
 
 .vs
 Debug
+Develop
 Release
 
 *.user

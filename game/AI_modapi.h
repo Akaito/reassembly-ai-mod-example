@@ -57,10 +57,53 @@ typedef HMODULE DllHandle;
 typedef void (WINAPI *Mod_GetApiVersion)(int * major, int * minor);
 typedef bool (WINAPI *Mod_CreateAiActions)(AI* ai);
 #else
-typedef nullptr_t DllHandle;
+typedef std::nullptr_t DllHandle;
 typedef void (*Mod_GetApiVersion)(int * major, int * minor);
 typedef bool (*Mod_CreateAiActions)(AI* ai);
 #endif
+
+// Use this with ai->addActionVanilla().
+enum VanillaActionType {
+    VANILLA_ACTION_TYPE_NONE                   = 0,
+    VANILLA_ACTION_TYPE_ATTACK                 = 1,
+    VANILLA_ACTION_TYPE_AVOID_CLUSTER          =  2,
+    VANILLA_ACTION_TYPE_AVOID_WEAPON           =  3,
+    VANILLA_ACTION_TYPE_BUD_REPRODUCE          =  4,
+    //VANILLA_ACTION_TYPE_CLEAR_DEBRIS           =  5,
+    //VANILLA_ACTION_TYPE_COLLECT                =  6,
+    //VANILLA_ACTION_TYPE_COLLECT_WANDER         =  7,
+    VANILLA_ACTION_TYPE_FALLBACK_TARGET        =  8,
+    //VANILLA_ACTION_TYPE_FOLLOW_ALLIES          =  9,
+    //VANILLA_ACTION_TYPE_FOLLOW_PARENT          = 10,
+    VANILLA_ACTION_TYPE_HEAL                   = 35,
+    VANILLA_ACTION_TYPE_HEALERS                = 11,
+    VANILLA_ACTION_TYPE_INVESTIGATE            = 12,
+    //VANILLA_ACTION_TYPE_INVESTIGATE_HEREDITARY = 13,
+    //VANILLA_ACTION_TYPE_JUST_GO                = 14,
+    //VANILLA_ACTION_TYPE_KILL_PLANTS            = 15,
+    VANILLA_ACTION_TYPE_METAMORPHOSIS          = 17,
+    //VANILLA_ACTION_TYPE_PLANT                  = 18,
+    VANILLA_ACTION_TYPE_PLANT_SELF             = 36,
+    //VANILLA_ACTION_TYPE_RAM_TARGET             = 19,
+    //VANILLA_ACTION_TYPE_RESPOND_TO_SIGNAL      = 20,
+    //VANILLA_ACTION_TYPE_RES_TO_PARENT          = 21,
+    //VANILLA_ACTION_TYPE_RETURN_PARENT          = 22,
+    //VANILLA_ACTION_TYPE_ROTATE                 = 23,
+    //VANILLA_ACTION_TYPE_RUN_AWAY               = 24,
+    VANILLA_ACTION_TYPE_SCAVENGE_WEAPON        = 25,
+    //VANILLA_ACTION_TYPE_SIGNAL_BACKUP          = 26,
+    //VANILLA_ACTION_TYPE_TARGET_DEFENSE         = 27,
+    VANILLA_ACTION_TYPE_TARGET_ENEMY           = 28,
+    //VANILLA_ACTION_TYPE_TARGET_HELP_ALLIES     = 29,
+    //VANILLA_ACTION_TYPE_TARGET_HEREDITARY      = 30,
+    //VANILLA_ACTION_TYPE_TARGET_OPPORTUNITY     = 31,
+    //VANILLA_ACTION_TYPE_UNTARGET               = 32,
+    VANILLA_ACTION_TYPE_WANDER                 = 33,
+    VANILLA_ACTION_TYPE_WEAPONS                = 34,
+
+    // changed by ChrisB, 2018-03-18 (update this line to force merge conflicts)
+    // next available: 37
+};
 
 enum AIMood { OFFENSIVE = 1,           // initiating combat
               NEUTRAL   = 0,           // no combat
@@ -162,7 +205,7 @@ struct AICommandConfig {
     bool operator==(const AICommandConfig& o) const;
     bool operator!=(const AICommandConfig& o) const { return !(*this == o); }
     bool usesResources() const;
-    bool isRoot() const;
+    DLLFACE bool isRoot() const;
 };
 
 

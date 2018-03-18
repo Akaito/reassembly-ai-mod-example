@@ -9,10 +9,14 @@
 #ifndef Outlaws_StdAfx_h
 #define Outlaws_StdAfx_h
 
-#ifdef BUILDING_REASSEMBLY
-#define DLLFACE __declspec(dllexport)
+#if WIN32
+#  ifdef BUILDING_REASSEMBLY
+#    define DLLFACE __declspec(dllexport)
+#  else
+#  define DLLFACE __declspec(dllimport)
+#  endif
 #else
-#define DLLFACE __declspec(dllimport)
+# define DLLFACE
 #endif
 
 #include <cstring>

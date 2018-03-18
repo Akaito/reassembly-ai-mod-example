@@ -2,9 +2,6 @@
 #ifndef _AI_H
 #define _AI_H
 
-//#define CHRIS_DLL_TEST (IS_DEVEL)
-#define CHRIS_DLL_TEST (1)
-
 #include "AI_modapi.h"
 #include "Nav.h"
 #include "Types.h"
@@ -257,6 +254,7 @@ public:
     DLLFACE float2            estimateTargetPos() const;
     DLLFACE bool              canEstimateTargetPos() const;
     DLLFACE void              addAction(AIAction * action);
+    DLLFACE bool              addActionVanilla(VanillaActionType actionType);  // returns true if an action type was recognized.  Action still isn't added if supportsConfig() is false.
     const AICommandConfig &   commandConfig() { return m_config;  }
     float2                    getTargetPos() const;
     const Block*              getTarget() const;
@@ -288,7 +286,7 @@ public:
     ~AI();
     
     void clearCommands();
-    void appendCommandDest(float2 p, float r);
+    DLLFACE void appendCommandDest(float2 p, float r);
 
     void onDamaged(int faction);
     void onClusterInit();

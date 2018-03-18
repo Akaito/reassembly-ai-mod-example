@@ -146,7 +146,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy mod files to their target for Reassembly to read.</Message>
-      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)" "$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -173,7 +173,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy mod files to their target for Reassembly to read.</Message>
-      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)" "$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -200,7 +200,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy mod files to their target for Reassembly to read.</Message>
-      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)" "$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Develop|Win32'">
@@ -227,7 +227,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy mod files to their target for Reassembly to read.</Message>
-      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)" "$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -253,7 +253,7 @@
       <AdditionalDependencies>OpenGL32.lib;Glu32.lib;$(SolutionDir)win32\ReassemblyRelease.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)" "$(Configuration)"</Command>
       <Message>Copy mod files to their target for Reassembly to read.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -280,7 +280,7 @@
       <AdditionalDependencies>OpenGL32.lib;Glu32.lib;$(SolutionDir)win32\ReassemblyDevelop.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)"</Command>
+      <Command>"$(SolutionDir)post-build.bat" "$(SolutionName)" "$(Configuration)"</Command>
       <Message>Copy mod files to their target for Reassembly to read.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
