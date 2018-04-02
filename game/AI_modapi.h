@@ -54,8 +54,8 @@ struct BlockCluster;
 
 #ifdef _WIN32
 typedef HMODULE DllHandle;
-typedef void (WINAPI *Mod_GetApiVersion)(int * major, int * minor);
-typedef bool (WINAPI *Mod_CreateAiActions)(AI* ai);
+typedef void (*Mod_GetApiVersion)(int * major, int * minor);
+typedef bool (*Mod_CreateAiActions)(AI* ai);
 #else
 typedef std::nullptr_t DllHandle;
 typedef void (*Mod_GetApiVersion)(int * major, int * minor);
