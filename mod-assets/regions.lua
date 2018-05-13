@@ -1,5 +1,6 @@
 {
     -- ((TODO: Is this a sane regions.lua template?  Probably needs work.))
+    -- see regions.lua in Reassembly's files for documentation.
     ident=80,
     color=0x5e6d91,
     faction=80,
