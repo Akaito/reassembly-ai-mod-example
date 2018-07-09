@@ -60,8 +60,6 @@ bool CreateAiActions(AI* ai) {
 
     if (config.isMobile && config.isRoot() && !config.isAttached)
     {
-        // FIXME need to either metamorphasize or plant self
-        // FIXME very bad to overwrite to non-plant blueprint and then get planted
         ai->addActionVanilla(VANILLA_ACTION_TYPE_PLANT_SELF);
         ai->addActionVanilla(VANILLA_ACTION_TYPE_METAMORPHOSIS);
     }
