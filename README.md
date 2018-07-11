@@ -85,6 +85,6 @@ Files / directories
 Examples
 ----------
 
-* Use guns as thrusters: https://github.com/Akaitwo/Reassembly-Weapon-Engine-Assist-AI
-* Template for modifying AAttack and ATargetEnemy (for combat AI tweaks): https://github.com/manylegged/reassembly-tactics-example
+* Use guns as thrusters: [/Reassembly-Weapon-Engine-Assist-AI](https://github.com/Akaitwo/Reassembly-Weapon-Engine-Assist-AI)
+* Template for modifying AAttack and ATargetEnemy (for combat AI tweaks): [reassembly-tactics-example](https://github.com/manylegged/reassembly-tactics-example)
 
