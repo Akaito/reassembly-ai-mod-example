@@ -80,3 +80,11 @@ Files / directories
 	`%USERPROFILE%/Saved Games/Reassembly/mods/<your-mod-name>-backup`.
 	Then in Visual Studio, Build -> Rebuild Project.
 	Run Reassembly again, and observe your mod's ships, names, behavior, etc.
+
+
+Examples
+----------
+
+* Use guns as thrusters: [/Reassembly-Weapon-Engine-Assist-AI](https://github.com/Akaitwo/Reassembly-Weapon-Engine-Assist-AI)
+* Template for modifying AAttack and ATargetEnemy (for combat AI tweaks): [reassembly-tactics-example](https://github.com/manylegged/reassembly-tactics-example)
+

@@ -21,8 +21,7 @@ void GetApiVersion(int * major, int * minor) {
 }
 
 // tournament mode AI
-bool CreateAiActions(AI* ) {
-    /*
+bool CreateAiActions(AI* ai) {
     const AICommandConfig &         config = ai->getConfig();
     const ECommandFlags::value_type flags  = config.flags;
 
@@ -38,9 +37,7 @@ bool CreateAiActions(AI* ) {
     ai->addActionVanilla(VANILLA_ACTION_TYPE_ATTACK);
     ai->addActionVanilla(VANILLA_ACTION_TYPE_HEALERS); // notice this isn't used by the interceptor, due to supportsConfig()
     ai->addActionVanilla(VANILLA_ACTION_TYPE_INVESTIGATE);
-    */
 
-    /*
     if (config.features&Block::ASSEMBLER)
     {
         ai->addActionVanilla(VANILLA_ACTION_TYPE_HEAL);
@@ -63,8 +60,6 @@ bool CreateAiActions(AI* ) {
 
     if (config.isMobile && config.isRoot() && !config.isAttached)
     {
-        // FIXME need to either metamorphasize or plant self
-        // FIXME very bad to overwrite to non-plant blueprint and then get planted
         ai->addActionVanilla(VANILLA_ACTION_TYPE_PLANT_SELF);
         ai->addActionVanilla(VANILLA_ACTION_TYPE_METAMORPHOSIS);
     }
@@ -81,7 +76,6 @@ bool CreateAiActions(AI* ) {
     {
         ai->addActionVanilla(VANILLA_ACTION_TYPE_WANDER);
     }
-    */
 
     return true; // we handled it; no need for default AI actions
 }

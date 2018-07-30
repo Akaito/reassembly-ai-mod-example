@@ -833,7 +833,7 @@ public:
     float  getWeaponRange() const;
     float  getWeaponVel() const;
     float  getWeaponPeriod() const;
-    DLLFACE void   setWeaponEnabled(bool enable); // TODO : UN-EXPORT THIS: Super-easy to cheat with it!
+    DLLFACE void setWeaponEnabled(bool enable);
 
     float2 getLaunchVel() const;
     bool   isLaunchEnoughRes() const;
