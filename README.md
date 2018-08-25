@@ -1,6 +1,6 @@
 # Reassembly AI Mod Example
 
-[![Feature Requests](http://feathub.com/Akaito/reassembly-ai-mod-example?format=svg)](http://feathub.com/Akaito/reassembly-ai-mod-example)
+[Feature Requests](http://feathub.com/Akaito/reassembly-ai-mod-example)
 
 How to use
 ----------
