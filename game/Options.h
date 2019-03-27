@@ -21,6 +21,7 @@
     F(float, gamepadDamping, 0.5f)              \
     F(int,   version, 0)                        \
     F(string, language, string())               \
+    F(int,   musicSelection, 0)                 \
 
     
 

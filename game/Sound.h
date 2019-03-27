@@ -11,6 +11,7 @@
 
 #include "Types.h"
 struct SoundEvent;
+struct OneMod;
 
 #define AUDIO_FLAGS(F)                                \
     F(STREAM,      1<<0)                              \
@@ -35,7 +36,7 @@ struct EventDescription {
     float          volume         = 1.0;
     float          pitch          = 1.0;
     float          pitchRandomize = 0.f;
-    EAudioFlags flags;
+    EAudioFlags    flags;
     float          rolloff  = 1.f;
     float          minDist  = 1.f;
     float          maxDist  = 9999999999.f;
@@ -43,6 +44,7 @@ struct EventDescription {
     float2         delay;
 
     lstring        name;
+    const OneMod*  mod = NULL;
 
     mutable uint   m_index = 0;
     

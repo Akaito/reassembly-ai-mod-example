@@ -5,7 +5,7 @@
 #include "GUI.h"
 
 struct GameZone;
-struct WatchPortPair;
+struct ActiveData;
 
 struct SelectionStats {
 
@@ -14,17 +14,6 @@ struct SelectionStats {
     int    energy = 0;
     float  health = 0.f;
     AABBox bbox;
-};
-
-struct ActiveData {
-    vector<WatchPortPair>             connections;
-    copy_ptr<GameZone>                ghost;
-    std::unordered_set<const Block*>  ghostBlocks;
-    int                               ghostConnections = 0;
-
-    ~ActiveData();
-    void clear();
-    void clearGhost();
 };
 
 struct Selection {
@@ -37,7 +26,7 @@ private:
 
     bool                       draggedBlockDragged = false; // true if draggedBlock actually moved
     float2                     dragOffset;
-    ActiveData                 active;
+    copy_ptr<ActiveData>       active;
     watch_ptr<Block>           lastBlock[2];
 
     bool                       rotationHandleRotated = false; // true if cluster actually moved
@@ -49,9 +38,8 @@ private:
     float2                     rotationCenter;
 
     float                      selectionBlinkTime = 0.f;
+    double                     lastDragTime = 0.0;
     OverlayMessage             message;
-
-    
 
     watch_ptr<Block>           hoveredBlock;
 

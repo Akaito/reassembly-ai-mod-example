@@ -12,17 +12,21 @@ struct BShip final : public Button {
 
     ClusterWindow   window;
     BlockCluster   *cluster    = NULL;
+    BlockId_t       locked     = 0;
     const bool      printIndex = false;
-    bool            locked     = false;
     bool            useRecording = false;
     bool            copyHack = false;
     int             count = 1;
     ButtonText      bt;
+    
+    float           sort_key = 0;
+    lstring         sort_name;
 
     BShip(BlockCluster *cl, int idx=0, bool pri=false);
 
     void updateLocked();
-    void renderContents(const ShaderState &ss);
+    void renderContents(const ShaderState &ss)override;
+    void renderContents1(const ShaderState &ss) override;
     void renderDragged(const ShaderState &ss, float2 pos) const;
 };
 

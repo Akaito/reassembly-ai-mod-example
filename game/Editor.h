@@ -8,11 +8,12 @@ struct Sector;
 struct MapObjective;
 struct ImportShips;
 
-extern bool kHeadlessMode;
+extern int kHeadlessMode;
 
 struct GSEditor : public GameState
 {
     float2                cursorPos;
+    float                 cursorAngle = 0.f;
     TextInputCommandLine  console;
     bool                  warpedMouse = false;
     string                script;
@@ -57,6 +58,8 @@ struct GSEditor : public GameState
     bool HandleEvent(const Event* event) override;
 
     bool isEditor() const override { return true; }
+
+    SaveGame *getSave();
 };
 
 void doDebugReload(int which);

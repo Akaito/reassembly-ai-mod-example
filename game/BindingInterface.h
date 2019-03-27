@@ -18,6 +18,7 @@ struct BindingInterface final : public ITabInterface {
     GLRenderTexture m_shipTex;
     View            m_shipView;
     vector<Button>  m_groupButtons;
+    vector<Button>  m_utilityButtons;
     vector<Button>  m_blockButtons;
     vector<Block *> m_blocks;
     BlockCluster*   m_cluster = NULL;
@@ -44,7 +45,7 @@ struct BindingInterface final : public ITabInterface {
         if (idx < 0) {
             idx = -idx -1;
             string str = KeyBindings::getFireDescription(idx);
-            if (idx != KeyBindings::FG_DEFENSE) {
+            if (idx < FG_DEFENSE) {
                 str += "\n";
                 str += (m_cluster->data.wgroup[idx] == WF_RIPPLE_FIRE) ?
                        _("Ripple Fire alternates weapons to maximize rate of fire") :
@@ -54,7 +55,7 @@ struct BindingInterface final : public ITabInterface {
         }
         else
         {
-            lstring name = m_blocks[idx]->sb.name;
+            lstring name = m_blocks[idx]->sb.bt->name;
             m_tooltip = str_format(_("Double click to select all %ss"), name.c_str());
         }
         m_tooltipIdent = idx;
@@ -73,10 +74,11 @@ struct BindingInterface final : public ITabInterface {
     {
         m_cam.m_viewRadiusMin = kConstructorViewBounds.x;
         m_cam.m_viewRadiusMax = kConstructorViewBounds.y;
-        
-        for (int i=0; i<KeyBindings::FG_COUNT; i++)
+
+        m_groupButtons.resize(FG_UTILITY0);
+        for (int i=0; i<FG_UTILITY0; i++)
         {
-            Button bu;
+            Button &bu = m_groupButtons[i];
             if (i < KeyBindings::FireKeyCount) {
                 bu.text = KeyBindings::instance().getFireKey(i).getKeyStr();
             } else {
@@ -85,7 +87,19 @@ struct BindingInterface final : public ITabInterface {
             
             bu.ident = -(i+1);
             bu.style = S_BOX|S_FIXED;
-            m_groupButtons.push_back(bu);
+        }
+
+        if (isFieldsDLCInstalled())
+        {
+            m_utilityButtons.resize(FG_COUNT - FG_UTILITY0);
+            for (int j=0; j<m_utilityButtons.size(); j++)
+            {
+                Button &bu = m_utilityButtons[j];
+                const int i = FG_UTILITY0 + j;
+                bu.text = KeyBindings::instance().getFireName(i);
+                bu.ident = -(i+1);
+                bu.style = S_HEX|S_FIXED;
+            }
         }
 
         m_ship.defaultBGColor = ALPHAF(0.5f);
@@ -133,7 +147,7 @@ struct BindingInterface final : public ITabInterface {
         m_blocks.clear();
         m_blockButtons.clear();
         
-        for (int i=0; i<=KeyBindings::FG_AUTO; i++)
+        for (int i=0; i<=FG_AUTO; i++)
         {
             m_groupButtons[i].subtext = getGroupSubtext(i);
         }
@@ -141,17 +155,51 @@ struct BindingInterface final : public ITabInterface {
         int i=0;
         foreach (Block *bl, m_cluster->blocks)
         {
-            if (bl->sb.features&(Block::LAUNCHER|Block::CANNON|Block::LASER))
-            {
-                m_blocks.push_back(bl);
-                m_blockButtons.push_back(Button("", "", i));
-                Button& bu = m_blockButtons.back();
-                bu.defaultBGColor = 0;
-                bu.pressedBGColor = SetAlphaAXXX(0xf0404040, 0.25f);
-                i++;
-            }
+            const BindingType bt = bl->sb.getBindingType();
+            if (bt == BT_NONE)
+                continue;
+            m_blocks.push_back(bl);
+            m_blockButtons.push_back(Button("", "", i));
+            Button& bu = m_blockButtons.back();
+            bu.defaultBGColor = 0;
+            bu.pressedBGColor = SetAlphaAXXX(0xf0404040, 0.25f);
+            i++;
+
+            if (bt == BT_UTILITY)
+                bu.style |= S_HEX;
         }
 
+    }
+
+    bool GroupButtonHandleEvent(const Event *event, Button &bu, bool *isActivate, bool *isPress)
+    {
+        if (!ButtonHandleEvent(bu, event, isActivate, isPress))
+            return false;
+        const uint idx = -bu.ident - 1;
+        if (!m_selected.empty())
+        {
+            if (event->type == Event::MOUSE_UP)
+            {
+                foreach (Button *bb, m_selected)
+                {
+                    SerialBlock &sb = m_blocks[bb->ident]->sb;
+                    if (getBindingType((FireGroup)idx) != sb.getBindingType())
+                        continue;
+                    if (sb.bindingId != -bu.ident)
+                        m_bindingChanged = true;
+                    sb.bindingId = -bu.ident;
+                }
+                m_selected.clear();
+            }
+        }
+        else if (*isActivate && idx <= FG_AUTO)
+        {
+            m_cluster->data.wgroup[idx] = ((m_cluster->data.wgroup[idx] == WF_RIPPLE_FIRE)
+                                          ? WF_FIRE_ALL : WF_RIPPLE_FIRE);
+            bu.subtext = getGroupSubtext(idx);
+            m_bindingChanged = true;
+        }
+        return true;
     }
     
     bool HandleEvent(const Event* event)
@@ -165,31 +213,12 @@ struct BindingInterface final : public ITabInterface {
         bool isActivate = false;
         bool isPress = false;
         foreach (Button& bu, m_groupButtons) {
-            if (ButtonHandleEvent(bu, event, &isActivate, &isPress))
-            {
-                const uint idx = -bu.ident - 1;
-                if (!m_selected.empty())
-                {
-                    if (event->type == Event::MOUSE_UP)
-                    {
-                        foreach (Button *bb, m_selected)
-                        {
-                            uchar &bindingId = m_blocks[bb->ident]->sb.bindingId;
-                            bindingId = -bu.ident;
-                            m_bindingChanged = (bindingId != -bu.ident);
-                        }
-                        m_selected.clear();
-                    }
-                }
-                else if (isActivate && idx <= KeyBindings::FG_AUTO)
-                {
-                    m_cluster->data.wgroup[idx] = ((m_cluster->data.wgroup[idx] == WF_RIPPLE_FIRE)
-                                                   ? WF_FIRE_ALL : WF_RIPPLE_FIRE);
-                    bu.subtext = getGroupSubtext(idx);
-                    m_bindingChanged = true;
-                }
+            if (GroupButtonHandleEvent(event, bu, &isActivate, &isPress))
                 handled = true;
-            }
+        }
+        foreach (Button& bu, m_utilityButtons) {
+            if (GroupButtonHandleEvent(event, bu, &isActivate, &isPress))
+                handled = true;
         }
 
         int idx = 0;
@@ -294,26 +323,36 @@ struct BindingInterface final : public ITabInterface {
 
         ShaderState s1 = view.getScreenShaderState();
 
-        theDMesh().start();
-        m_ship.position = center - justX(size/2.f) + float2(3.f * size.x / 10.f, 0.f);
-        m_ship.size = float2(3.f * size.x / 5.f, size.y - kButtonPad.y);
-        m_ship.alpha = view.alpha;
-        m_ship.renderButton(theDMesh());
+        DMesh::Handle h(theDMesh());
 
-        const float2 start = center + size/2.f - float2(size.x / 5.f, 0.f);
+        const bool hasUtility = !m_utilityButtons.empty();
+        const float panelRad = hasUtility ? (size.x / 10.f) : (size.x / 5.f);
+        
+        m_ship.size = float2(3.f * size.x / 5.f, size.y - kButtonPad.y);
+        if (hasUtility)
+            m_ship.position = center;
+        else
+            m_ship.position = center - justX(size/2.f - kButtonPad.x) + justX(m_ship.size/2.f);
+        m_ship.alpha = view.alpha;
+        m_ship.renderButton(h.mp);
+
+        // draw weapon bindings panel on right side
+        const float2 start = center + size/2.f - float2(panelRad, 0.f);
         float2 pos = start;
-        pos.y -= GLText::Put(s1, start, GLText::DOWN_CENTERED, MultAlphaAXXX(kGUIText, view.alpha),
-                             36, _("Weapon Bindings")).y;
+        const uint tsize = hasUtility ? 28 : 36;
+        const uint tcolor = MultAlphaAXXX(kGUIText, view.alpha);
+        pos.y -= GLText::Put(s1, start, GLText::DOWN_CENTERED, tcolor, tsize, _("Weapon Bindings")).y;
         const float bheight = size.y - (start.y - pos.y);
 
         string tooltip;
+        const float2 gbu_size = f2(size.x / (hasUtility ? 7.f : 4.f) - kButtonPad.x,
+                                   bheight / (max(m_utilityButtons.size(), m_groupButtons.size()) + 2));
         
         pos.y -= 0.5f * bheight / m_groupButtons.size();
         foreach (Button& bu, m_groupButtons)
         {
-            bu.size.y = bheight / (m_groupButtons.size() + 2);
-            bu.size.x = size.x / 4.f - kButtonPad.x;
             bu.defaultLineColor = kBIColorDef;
+            bu.size = gbu_size;
             bu.position = pos;
             bu.alpha = view.alpha;
             pos.y -= bheight / m_groupButtons.size();
@@ -321,7 +360,30 @@ struct BindingInterface final : public ITabInterface {
             if (bu.hovered)
                 tooltip = getTooltip(bu.ident);
         }
-        
+
+        if (hasUtility)
+        {
+            // draw utility bindings panel on left side
+            pos.x = center.x - size.x/2.f + panelRad;
+            pos.y = start.y;
+
+            pos.y -= GLText::Put(s1, pos, GLText::DOWN_CENTERED, tcolor, tsize, _("Utility Bindings")).y;
+
+            pos.y -= 0.5f * bheight / m_utilityButtons.size();
+            foreach (Button& bu, m_utilityButtons)
+            {
+                bu.defaultLineColor = kBIColorDef;
+                bu.size = gbu_size;
+                bu.position = pos;
+                bu.alpha = view.alpha;
+                pos.y -= bheight / m_utilityButtons.size();
+
+                if (bu.hovered)
+                    tooltip = getTooltip(bu.ident);
+            }
+        }
+
+        // draw block buttons
         for (int i=0; i<m_blockButtons.size(); i++)
         {
             Button &bb = m_blockButtons[i];
@@ -335,15 +397,17 @@ struct BindingInterface final : public ITabInterface {
             const bool isSelected = vec_contains(m_selected, &bb);
             uint       defLColor  = kBIColorDef;
             
-            if (bb.visible && 0 < bl->sb.bindingId && bl->sb.bindingId <= m_groupButtons.size())
+            if (bb.visible && 0 < bl->sb.bindingId && bl->sb.bindingId <= m_groupButtons.size() + m_utilityButtons.size())
             {
-                Button &group = m_groupButtons[bl->sb.bindingId-1];
-                const uint color = (bb.hovered || group.hovered) ? kBIColorHi : kBIColorDef;
-                if (bb.hovered || group.hovered)
+                const uint idx = bl->sb.bindingId-1;
+                Button &group = (idx < m_groupButtons.size()) ? m_groupButtons[idx] : m_utilityButtons[idx - m_groupButtons.size()];
+                const bool hovered = (bb.hovered || group.hovered);
+                const uint color = hovered ? kBIColorHi : kBIColorDef;
+                if (hovered)
                     group.defaultLineColor = color;
                 defLColor = color;
                 
-                theDMesh().line.color32(color, view.introAnim);
+                h.mp.line.color32(color, view.introAnim);
                 PushLine(bb.position, bb.size / 2.f, group.position, group.size / 2.f);
             }
 
@@ -356,7 +420,7 @@ struct BindingInterface final : public ITabInterface {
 
         foreach (Button *bu, m_selected)
         {
-            theDMesh().line.color32(kBIColorAct, view.alpha);
+            h.mp.line.color32(kBIColorAct, view.alpha);
             PushLine(bu->position, bu->size / 2.f, KeyState::instance().cursorPosScreen, float2());
         }
 
@@ -383,6 +447,23 @@ struct BindingInterface final : public ITabInterface {
                     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
                     const ShaderState ws = m_shipView.getWorldShaderState();
                     m_cluster->renderInZone(ws, m_shipView);
+
+                    // draw weapon ranges
+                    // LineMesh<VertexPosColor> &mesh = m_cluster->getMesh().line;
+                    LineMesh<VertexPosColor> mesh;
+                    mesh.clear();
+                    for (int i=0; i<m_blockButtons.size(); i++)
+                    {
+                        const Button &bb = m_blockButtons[i];
+                        const Block  *bl = m_blocks[i];
+                        if (!(bb.visible && 0 < bl->sb.bindingId && bl->sb.bindingId <= m_groupButtons.size()))
+                            continue;
+                        const Button &group = m_groupButtons[bl->sb.bindingId-1];
+                        if (!bb.hovered && !group.hovered)
+                            continue;
+                        bl->renderConstruct(mesh);
+                    }
+                    mesh.Draw(ws, ShaderColor::instance());
                 }
                 m_shipTex.UnbindFramebuffer();
             }
@@ -394,37 +475,44 @@ struct BindingInterface final : public ITabInterface {
         }
 
         // draw ship button
-        theDMesh().tri.Draw(s1, ShaderColor::instance());
-        theDMesh().tri.clear();
+        h.mp.tri.Draw(s1, ShaderColor::instance());
+        h.mp.tri.clear();
+        
 
         foreach (Button &bu, m_blockButtons)
         {
-            bu.renderButton(theDMesh(), false);
+            bu.renderButton(h.mp, false);
         }
 
         foreach (Button& bu, m_groupButtons)
         {
             bu.hoveredLineColor = !m_selected.empty() ? kBIColorAct : kBIColorHi;
-            bu.renderButton(theDMesh(), false);
+            bu.renderButton(h.mp, false);
+        }
+
+        foreach (Button& bu, m_utilityButtons)
+        {
+            bu.hoveredLineColor = !m_selected.empty() ? kBIColorAct : kBIColorHi;
+            bu.renderButton(h.mp, false);
         }
 
         // draw lines connecting things
-        theDMesh().line.Draw(s1, ShaderColor::instance());
-        theDMesh().line.clear();
+        h.mp.line.Draw(s1, ShaderColor::instance());
+        h.mp.line.clear();
 
         // draw buttons on top of lines
-        theDMesh().tri.Draw(s1, ShaderColor::instance());
-        theDMesh().tri.clear();
+        h.mp.tri.Draw(s1, ShaderColor::instance());
+        h.mp.tri.clear();
 
-        foreach (Button& bu, m_groupButtons) {
+        foreach (Button& bu, m_groupButtons)
             bu.renderContents(s1);
-        }
-        foreach (Button& bu, m_blockButtons) {
+        foreach (Button& bu, m_utilityButtons)
             bu.renderContents(s1);
-        }
+        foreach (Button& bu, m_blockButtons)
+            bu.renderContents(s1);
 
-        theDMesh().Draw(s1, ShaderColor::instance(), ShaderColor::instance());
-        theDMesh().finish();
+        h.Draw(s1);
+        h.clear();
 
         s1.translateZ(0.5f);
         
@@ -441,6 +529,7 @@ struct BindingInterface final : public ITabInterface {
                                 flipY(m_aibehavior.size / 2.f + 4.f * kButtonPad);
         m_aibehavior.alpha = view.alpha;
         m_aibehavior.render(s1);
+        m_aibehavior.renderContents1(s1);
     }
 
     virtual void onSwapOut()
@@ -455,12 +544,15 @@ struct BindingInterface final : public ITabInterface {
             else
                 globals.save->writeBlueprintsToFile();
         }
-        if (m_cluster->zone)
+        if (m_cluster->zone && !m_pBindingChanged)
         {
             // special case for sandbox where ship may not have blueprint
+            if (m_bindingChanged) {
+                m_cluster->dirty = true;
+                m_cluster->applyBlueprintBindings(m_cluster);
+            }
             m_cluster->setPos(f2(m_savePos));
             m_cluster->setAngle(m_savePos.z);
-            m_cluster->applyBlueprintBindings(m_cluster);
         }
     }
 

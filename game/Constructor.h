@@ -7,6 +7,7 @@
 #include "ClusterWindow.h"
 
 struct StationInterface;
+struct BShip;
 
 struct BBlock final : public ButtonBase {
         
@@ -16,7 +17,7 @@ struct BBlock final : public ButtonBase {
     ButtonText          bt;
     float               angle = 0.f;
     float               highlight = 0;
-    const vector<uint> *ids = NULL;
+    const vector<BlockId_t> *ids = NULL;
 
     BBlock() : window(S_BOX) {}
     BBlock(int idx, const vector<uint> *idz) : window(S_BOX), ids(idz) { index = idx; }
@@ -27,6 +28,7 @@ struct BBlock final : public ButtonBase {
 
     void renderButton(DMesh& mesh, bool selected=false);
     void renderContents(const ShaderState &sstate);
+    void renderContents1(const ShaderState &sstate);
     void renderDragged(const ShaderState &sstate, float2 pos);
     void setupWindowView();
 
@@ -69,7 +71,7 @@ private:
     Mode                  m_mode;
 
     mutable string        m_hoveredStats;
-    mutable const Block*  m_lastHovered = NULL; // don't dereference! only for comparison
+    mutable BlockId_t     m_lastHovered = 0;
     
 public:
 
@@ -145,8 +147,9 @@ struct ConstructEditor final : public GameState {
     TextInputBase          m_nameText;
 
     View                   m_bgview;
+    BShip*                 m_bship = NULL;
 
-    ConstructEditor(BlockCluster** pcl, int st, const SerialCommand *sc);
+    ConstructEditor(BlockCluster** pcl, int st, const SerialCommand *sc, BShip *bsh);
 
     void OnNotify(const Notification& notif);
 
@@ -180,7 +183,7 @@ struct ConstructEditor final : public GameState {
     const View& getActiveView() { return m_view; }
 };
 
-
+int vecAddBlockSorted(vector<BlockId_t> &vec, BlockId_t ident);
 
 #endif // CONSTRUCTOR_H
 

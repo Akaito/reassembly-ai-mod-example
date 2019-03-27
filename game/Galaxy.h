@@ -8,6 +8,8 @@ struct Agent;
 struct StreamerSpec;
 struct OneMod;
 
+DECLARE_ENUM(uint, EObjective);
+
 typedef vector< pair<Faction_t, vector<float2> > > RegionFleets;
 
 #define GALAXY_REGION_FIELDS(F)                 \
@@ -40,6 +42,7 @@ struct GalaxyRegion {
     DECLARE_SERIAL_STRUCT_CONTENTS(GalaxyRegion, GALAXY_REGION_FIELDS, SERIAL_PLACEHOLDER);
 
     string source;
+    const OneMod *mod = NULL;
     GalaxyRegion *parent = NULL;
     
     int size() const
@@ -52,9 +55,9 @@ struct GalaxyRegion {
     }
 
     const GalaxyRegion *getById(int nm) const;
-    const GalaxyRegion* getByFaction(int faction) const;
+    const GalaxyRegion* getByFaction(Faction_t faction) const;
 
-    void expandOnLoad(const OneMod *mod);
+    void expandOnLoad();
 };
 
 // instance definition
@@ -156,7 +159,9 @@ private:
     GalaxyMap             m_map;
     SaveGame             *m_save = NULL;
     GLTexture             m_mapTex;
+    bool                  m_wraps = true;
     LoadProgress          m_progress;
+    mutable vector<MapObjective*> m_needsFill;
 
     void generateRegion(const GalaxyRegion* region, SaveGame& save,
                         spatial_hash<bool>& stuff, vector<float2> &points,
@@ -174,6 +179,15 @@ public:
     const GalaxyRegion *getRegion(float2 pos) const { return m_regions->getById(m_map.atPos(pos).region); }
     const GalaxyRegion &getRootRegion() const { return *m_regions; }
 
+    void getFactionList(vector<Faction_t> &facs, const GalaxyRegion *region=NULL) const
+    {
+        if (!region)
+            region = m_regions.get();
+        vec_add(facs, region->faction);
+        for_ (reg, region->subregions)
+            getFactionList(facs, reg.get());
+    }
+    
     int getRegionFleetDeadliness(float2 pos) const;
     int getRegionRandomizedFaction(float2 pos) const;
     vector<Faction_t> getRegionNearbyFactions(float2 pos) const;
@@ -190,10 +204,11 @@ public:
     bool      isVisited(float2 pos) const;
     
     void fillLevel(GameZone* zone, const Level* level) const;
-    void fillCell(GameZone* zone, const Level* level, const GalaxyMap::Cell &cell) const;
+    void fillCell(GameZone* zone, const Level* level, const GalaxyMap::Cell &cell, EObjective oflags) const;
     bool onWarpUpdate(Level * level) const;
     bool isSaveValid(int2 pos) const { return m_map.at(pos).valid; }
     MapObjective* generate(SaveGame &save); // return first station
+    MapObjective* generate_foredit(SaveGame &save);
     float getLoadPercent() const { return m_progress.getPercent(); }
     bool loadRegions(SaveGame *save);
     void setRegions(const GalaxyRegion &reg);
@@ -202,11 +217,9 @@ public:
     bool saveMap() const;
 
     bool hasMap() const { return !m_map.cells.empty(); }
-    float2 getWrappedPos(float2 pos) const
-    {
-        return modulo(pos, getWrapSize());
-    }
+    float2 getWrappedPos(float2 pos) const { return m_wraps ? modulo(pos, getWrapSize()) : pos; }
 
+    void setMapSize(float2 ws);
     float2 getWrapSize() const;
 
     void onFactionsUpdate(int2 cell, const unordered_map<int, int> &factions);
@@ -219,5 +232,6 @@ public:
 };
 
 void globalReloadRegions();
+GameState *CreateGSGalaxyOptions(int slot, int seq, GameState *mm);
 
 #endif

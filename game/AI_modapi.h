@@ -105,11 +105,11 @@ enum VanillaActionType {
     // next available: 37
 };
 
-enum AIMood { OFFENSIVE = 1,           // initiating combat
-              NEUTRAL   = 0,           // no combat
-              DEFENSIVE = -1 };        // only fighting because being attacked
+enum AIMood  { OFFENSIVE = 1,           // initiating combat
+               NEUTRAL   = 0,           // no combat
+               DEFENSIVE = -1 };        // only fighting because being attacked
 
-enum AIPriority {
+enum AIPriority : uchar {
     PRI_OVERRIDE = 0,
     PRI_ALWAYS   = 1,
     PRI_COMMAND  = 3,
@@ -117,9 +117,9 @@ enum AIPriority {
 };
 
 
-struct AIAction {
+struct DLLFACE AIAction {
 
-    enum ActionLane
+    enum ActionLane : uchar
     {
         LANE_NONE        = 0,
         LANE_MOVEMENT    = 1<<0,
@@ -131,7 +131,7 @@ struct AIAction {
         // ...
     };
 
-    enum ActionTag
+    enum ActionTag : uchar
     {
         TAG_COMMAND  = 1<<1,    // normal command, for RTS style completeable actions
         TAG_BEHAVIOR = 1<<2,
@@ -165,30 +165,31 @@ struct AIAction {
 
     static bool supportsConfig(const AICommandConfig& cfg) { return true; }
 
-    DLLFACE uint noAction(const char* reason);
+    uint noAction(const char* reason);
 
     string toString() const;
 
-    virtual void render(void* line) const { line; }
+    virtual void render(void* ) const { }
 
     // helper
-    DLLFACE const BlockCluster* getCluster() const;
-    DLLFACE float2 getClusterPos() const;
+    const BlockCluster* getCluster() const;
+    float2 getClusterPos() const;
     float  getClusterBRadius() const;
 
     bool isDestObstructed(float2 dest, uint ignoreFaction, float avoidDebrisRatio) const;
+    bool isOrbiting() const;
 
     // repath if we hit something (bigger than kAvoidDebrisRadiusRatio)
     bool needsRepath() const;
 
-    DLLFACE AIMood isActivelyHostile(const Block* target) const;
+    AIMood isActivelyHostile(const Block* target) const;
 
-    DLLFACE float getWaypointRadius() const;
+    float getWaypointRadius() const;
     
 };
 
 
-struct AICommandConfig {
+struct DLLFACE AICommandConfig {
 
     uint64 flags;
     uint64 features;
@@ -205,12 +206,12 @@ struct AICommandConfig {
     bool operator==(const AICommandConfig& o) const;
     bool operator!=(const AICommandConfig& o) const { return !(*this == o); }
     bool usesResources() const;
-    DLLFACE bool isRoot() const;
+    bool isRoot() const;
 };
 
 
 // base class for targeting other blocks
-struct ATargetBase : public AIAction {
+struct DLLFACE ATargetBase : public AIAction {
 
     typedef std::pair<const Block*, AIMood> Target;
 
@@ -220,13 +221,13 @@ struct ATargetBase : public AIAction {
 
     ATargetBase(AI* ai) : AIAction(ai, LANE_TARGET, PRI_ALWAYS) {}
 
-    DLLFACE virtual AIMood acceptTarget(const Block* target) const;
+    virtual AIMood acceptTarget(const Block* target) const;
 
-    DLLFACE Target testAcceptTarget(const Block *tgt) const;
+    Target testAcceptTarget(const Block *tgt) const;
 
-    DLLFACE float targetDistanceMetric(float2 defPos, const Block *tgt) const;
+    float targetDistanceMetric(float2 defPos, const Block *tgt) const;
 
-    DLLFACE uint findSetTarget();
+    uint findSetTarget();
 };
 
 

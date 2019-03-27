@@ -3,9 +3,7 @@
 #ifndef FLYCAM_H
 #define FLYCAM_H
 
-static const float kViewScaleMoveTime   = 0.1f;
-extern float kCameraSpeed;
-extern float kCameraZSpeed;
+extern float kViewScaleMoveTime;
 extern float kCameraRotationSpeed;
 
 extern float kCameraWheelZSpeed;
@@ -25,11 +23,14 @@ struct FlyCam {
     float  m_targetWorldRadius = 1440.f;
     float2 m_offsetFromPlayer;
     bool   m_lockedToPlayer = false;
-    float  m_viewRadiusMin;           // set in constructor
-    float  m_viewRadiusMax;           // set in constructor
+    float  m_viewRadiusMin = 0.f;
+    float  m_viewRadiusMax = 0.f;
+    float  m_fieldRadius = 0.f;
 
     float m_autoZoomWorldRadius = 0.f;
 
+    float viewRadiusMax() const;
+    
     std::mutex m_debugMutex;
     string     m_debug;
 
@@ -42,7 +43,7 @@ struct FlyCam {
     void panTowardsCursor(const GameZone* zone, View& view, bool sizeChanged, bool enablePan=true);
 
     void adjustZoom(float x=-1.f);
-    void panZoom(View &view);
+    void panZoom(View &view, bool enablePan=true);
     
 };
 

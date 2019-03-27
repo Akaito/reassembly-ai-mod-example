@@ -18,9 +18,9 @@
     F(UNDO_ALL,   1<<9)                          \
     F(DEAD,       1<<10)                         \
     F(NODEBRIS,   1<<11)                         \
+    F(GENERATE,   1<<12)                         \
 
 DEFINE_ENUM(uint64, EZoneFeatures, ZONE_FEATURES);
-
 
 #define UIMODES(F)                              \
     F(FLY, 0)                                   \
@@ -78,7 +78,7 @@ struct BlockPattern {
     bool allowCached(const BlockPattern &o) const;
 };
 
-struct GameZone final {
+struct DLLFACE GameZone final {
 
     EffectsParticleSystem*       m_particles = NULL;
     std::set< watch_ptr<Block> > m_effectBlocks;
@@ -99,6 +99,7 @@ protected:
     Selection*                 m_selection = NULL;
 
     vector< pair<const BlockCluster *, const Block*> > m_renderEffectBlocks;
+    mutable cpPolyShape        m_cachedShape;
 
 public:
 
@@ -118,7 +119,9 @@ public:
     float                      m_spaceHashDim = 0.f;
     int                        m_spaceHashSize = 0;
 
-    mutable cpPolyShape        m_cachedShape;
+    const MapObjective*        m_currentField = NULL;
+
+    cpShape*                   getCachedShape() const;
     
     bool isUpdateStep(const void *ptr, float step) const;
     bool isUpdateStep(size_t hash, float step) const;
@@ -143,18 +146,21 @@ public:
     Selection      *               getSelection() { return m_selection; }
     bool                           isSelected(const Block* bl) const;
     bool                           isDragged(const Block* bl) const;
+    void                           updateCurrentField();
+    const MapObjective*            getCurrentField() const { return m_currentField; }
+    float                          getVLimit(float2 p) const;
 
 protected:
     vector<BlockCluster*>        m_clusters;
     vector<BlockCluster*>        m_renderClusters;
-    std::mutex                   m_projectileMutex;
+    std::recursive_mutex         m_projectileMutex;
     vector<Projectile*>          m_projectiles;
     std::mutex                   m_resourceMutex;
     vector<ResourcePocket*>      m_resources;
     EZoneFeatures                m_zoneFeatures;
     StreamerBase*                m_streamer     = NULL;
     MetaZone*                    m_metaZone     = NULL;
-
+    
     // derived/dynamic zone state
     typedef spatial_hash< watch_ptr<Block> > BlockHash;
     typedef spatial_hash< BlockCluster* >    ClusterHash;
@@ -212,11 +218,14 @@ public:
     int clearPersistentIdent(uint pid);
     int clearRect(float2 offset, float2 radius);
     int clearOutOfBounds();
+    int clearOutOfCircle(float2 pos, float rad);
     
     bool isLocked() const { return m_locked; }
 
     EZoneFeatures getZoneFeatures() const { return m_zoneFeatures; }
     void setZoneFeatures(EZoneFeatures features);
+
+    float2 getCenter() const { return m_bbox.getCenter(); }
 
     int intersectCircleProjectiles(vector<Projectile*> *outv, float2 pos, float rad) const
     {
@@ -243,11 +252,11 @@ protected:
     ClusterMesh                  m_clusterMesh;
     LumaMesh                     m_effects;
     PointMesh<VertexPos2ColorTime> m_resMesh;
-    std::mutex                   m_renderableMutex;
-    vector<IRenderable*>         m_renderable;
     unique_ptr<BackgroundRenderer> m_background;
 
 public:
+
+    IRenderable*                 m_statInt = NULL;
 
     GLRenderTexture              m_bloomRt; // for bloom
     GLRenderTexture              m_blurRt;  // for blurring bloom
@@ -264,11 +273,6 @@ public:
 
     void Update();
 
-    void registerEffect(IRenderable *ptr)
-    {
-        std::lock_guard<std::mutex> l(m_renderableMutex);
-        vec_add(m_renderable, ptr);
-    }
     void updateRenderPositions(bool active);
     void renderProjectilesPass0(const View& view, TriMesh<VertexPosColorLuma> &mesh);
     void renderProjectilesPass1(const View& view, TriMesh<VertexPosColorLuma> &mesh) const;
@@ -286,7 +290,7 @@ public:
     void insert(Projectile* pr) 
     {
         ASSERT_UPDATE_THREAD();
-        std::lock_guard<std::mutex> l(m_projectileMutex);
+        std::lock_guard<std::recursive_mutex> l(m_projectileMutex);
         m_projectiles.push_back(pr); 
     }
 
@@ -323,8 +327,8 @@ public:
     IntersectSegmentResult intersectSegmentBlocks(const SegmentPattern &pattern) const;
 
     // return true if both points are valid positions (use streamer)
-    bool intersectSegmentBounds(float2 start, float2 end) const;
-    bool intersectPointBounds(float2 center) const;
+    bool intersectSegmentWindow(float2 start, float2 end) const;
+    bool intersectPointWindow(float2 center) const;
 
     bool useClusterHash() const;
     void intersectCircleBlocks(BlockList* blocks, const BlockPattern& pattern) const;
@@ -345,11 +349,14 @@ public:
     bool HandleEvent(const Event* event, bool mouseWasDown);
     bool HandleSharedEvent(const Event* event, GameState* caller);
 
-    void maintainFleet(float2 offset, float radius, const Fleetspec &fs);
+    bool maintainFleet(float2 offset, float radius, const Fleetspec &fs);
     void onPlayerColorChanged();
+
+    void shrink_to_fit();
 };
 
 void magicCoverCluster(const BlockCluster* cl);
+void clearTempZone();
 
 #endif
 

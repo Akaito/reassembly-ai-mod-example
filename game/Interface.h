@@ -13,12 +13,14 @@ extern const int kSubHeaderSize;
 
 struct BLogin : public Button {
     const bool canButton;
+    float height = 0.f;
     BLogin();
     bool HandleEvent(const Event* event, GameState *self, GameState* mainmenu);
     void renderContents(const ShaderState &ss);
 private:
     using ButtonBase::HandleEvent;
 };
+
 
 struct GSQuit final : public GameState {
 
@@ -129,17 +131,19 @@ void renderOptionTooltip(const ShaderState &ss, const vector<OptionEditor*> &ops
 
 struct GSCredits final : public GSSub {
 
-    AABBox m_bbox;
-    int kstart = -1;
-    int mstart = -1;
-    float column = 0.f;
-    
     GSCredits(GameState *mm) : GSSub(mm) { }
 
     void render(const View &view);
 
 private:
-    struct Credit { uint size; const char* title; const char* name; };
+
+    struct Credit { uint size; string title; string name; };
+    
+    AABBox         m_bbox;
+    int            kstart = -1;
+    int            mstart = -1;
+    float          column = 0.f;
+    vector<Credit> credits;
 
     float2 renderCred(const ShaderState& ss, const Credit& cred, float2 tp, uint tcolor, uint tcolor1);
     float2 renderScrollingCreds(const ShaderState &ss, float2 tp, int &start,
@@ -194,6 +198,7 @@ struct GSMainMenu final : public GameState
     
     vector<Button> buttons;
     BLogin         login;
+    Button         bdlc;
 
     float2         logoWindowSize;
     float          logoLastSpawn = -1000.f;
@@ -335,6 +340,7 @@ struct GSWormhole final : public GSSub {
     MapObjective    *wormhole;
     std::mutex       mutex;
     string           error;
+    string           note;
     vector<Button*>  buttons;
     bool             uploadAllowed = true;
 

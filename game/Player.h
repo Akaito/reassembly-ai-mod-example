@@ -1,6 +1,5 @@
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#pragma once
 
 #include "AI.h"
 #include "GUI.h"
@@ -54,7 +53,10 @@
     F(TRANSFER_RU_QUANT, uint64(1)<<45)         \
     F(RES_FULL, uint64(1)<<45)                  \
     F(RES_FULL_TUT, uint64(1)<<46)              \
-    
+    F(SEEN_GRAVITY, uint64(1)<<47)              \
+    F(HAVE_ACTIVABLE, uint64(1)<<48)            \
+    F(USE_UTILITY, uint64(1)<<49)               \
+    F(GRAVITY_HELP, uint64(1)<<50)              \
 
 DEFINE_ENUM(uint64, EProgress, PLAYER_PROGRESS);
 
@@ -125,16 +127,14 @@ struct TutorialData {
     typedef int VisitIndexedEnabled;
 };
 
-
-
 extern int       kPointMax;
 extern int       kPlayerFaction;
 extern int       kStartingP;
 extern const int kSaveCurrentVersion;
+extern const char* kSteamStats[];
+extern const AchievementStat kGOGStats[];
 
 void setupDefaultWeaponBindings(BlockCluster *cl, bool force=false);
-void processSteamCallbacks();
-void setupSteamStats();
 
 #define DEBUG_SPAWN(X) DPRINT(SPAWN, X)
 
@@ -201,6 +201,7 @@ struct PlayerData {
     float2                     velocity;
     float                      lastDamageTime = -1000.f;
     float                      lastWeaponUseTime = -1000.f;
+    float                      destructTimer = -1000.f;
     float                      disruptTime = 1.f; // disruption length
     float                      healthFrac = 1.f;
     bool                       isDead = false;
@@ -234,7 +235,7 @@ struct Player : public PlayerData {
     void toggleCommandMode(GameZone *zone);
     void cycleFleetMode();
     
-    Block *respawnFromStation(const MapObjective* station, GameZone *zone); // create new player ship
+    Block *respawnFromStation(const MapObjective* station, float2 pos, GameZone *zone); // create new player ship
     Block *spawnChild();
 
     void onContinue(GameZone* zone, float2 playerPos);
@@ -246,8 +247,8 @@ struct Player : public PlayerData {
     Block *findPlayerTarget(GameZone* zone, float radius) const;
     void onToggleTarget();
 
-    void setMessage(const string &msg);
-    void setErrorMessage(const string &msg);
+    void setMessage(string msg);
+    void setErrorMessage(string msg);
 
     bool gamepadToMouse(const Event *evt);
     void gamepadToMouseStep();
@@ -358,6 +359,7 @@ typedef std::map<lstring, ShipExperience> EncounterMap;
     F(EAutoFlags,             autoFlags)                          \
     F(EFleetMode,             fleetMode)                          \
     F(EControlScheme,         controlScheme)                      \
+    F(float2,                 mapTotalSize)                       \
 
 
 #define SAVE_DATA_FIELDS(F)                     \
@@ -392,6 +394,8 @@ struct SaveData {
     typedef int VisitEnabled;
 
     DECLARE_SERIAL_STRUCT_OPS(SaveData);
+
+    mutable unordered_set<BlockId_t> knownIds;
         
     SaveData();
     ~SaveData();
@@ -400,6 +404,7 @@ struct SaveData {
     uint getColor() const;
     uint getColorHi() const;
     int3 getColors() const;
+    int3 getClusterColors() const;
     void setColors(int3 v);
     
     BlockCluster* getAppliedBlueprint() const;
@@ -408,6 +413,7 @@ struct SaveData {
     void cleanupBlueprint(BlockCluster *bp) const;
 
     enum SaveStatus {
+        INIT        = -5,
         LOADING     = -4,
         FLEET_ONLY  = -3,
         OLD_VERSION = -2,
@@ -417,19 +423,30 @@ struct SaveData {
     };
 
     enum ExportFlags {
-        EXPORT_DEFAULT = 0,
-        EXPORT_MODS = 1
+        EXPORT_DEFAULT = 1,
+        EXPORT_MODS = 2,
+        EXPORT_JSON = 4,
     };
-    
-    SaveStatus loadSaveData(const char* path);
 
-    bool isLocked(const BlockCluster *bp) const;
+    SaveStatus loadSaveData(string path);
+ 
+    BlockId_t isLocked(const BlockCluster *bp) const;
+    
     BlueprintList getUniqueBlueprints() const;
     BlueprintList getAllBlueprints() const;
     string toUploadString() const;
     string toStringBlueprints(ExportFlags flags=EXPORT_DEFAULT) const;
-
+    
     void clone() const;
+
+    enum WormholeStatus {
+        NO_UNIQUE,
+        HAS_MODS,
+        WORMHOLE_OK,
+        NOT_LOGGED_IN,
+    };
+
+    WormholeStatus getWormholeStatus() const;
 };
 
 // persistent player info
@@ -464,11 +481,10 @@ struct SaveGame : public SaveData, public INotifyHandler {
     MapObjective *addObjective(MapObjective *mo);
     void onMetazoneHeartbeat();
 
-    void onLevelFill(GameZone *zone, const Level* level);
     bool onClusterUnload(BlockCluster* cl, const StreamerSpec &spec);
     void onClusterLoad(BlockCluster *cl);
     void onLoadClusters(GameZone *zone, const StreamerSpec &spec);
-    void onZoneUpdate();
+    void onZoneUpdate(GameZone *zone);
     void onZoneRender();
     
     void OnNotify(const Notification& notif);
@@ -501,5 +517,5 @@ private:
     void updateFactionBlueprints() const;
 };
 
-#endif // PLAYER_H
+bool do_unlock_faction(Faction_t fac);
 

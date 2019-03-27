@@ -24,6 +24,9 @@ struct MiniMap final : public ITabInterface {
         ICN_STATION,
         ICN_WORMHOLE,
         ICN_TARGET,
+        ICN_SLOW,
+        ICN_GRAVITY,
+        ICN_RAD,
         ICN_ALLY,               // here and below not in legend
         ICN_RES,
         ICN_INVALID,
@@ -37,6 +40,8 @@ private:
     View                             m_view;              // view of just map part
     bool                             m_isLarge     = false;
     bool                             m_isEmbedded  = false;
+    bool                             m_isOptions   = false;
+    MetaZone *                       m_mz = NULL;
     float                            m_objsize     = 0.f;
     float                            m_legendAlpha = 0.f;
     watch_ptr<const MapObjective>    m_hoveredBl;
@@ -55,13 +60,14 @@ public:
 
     void setPosition(float2 pos, float2 size);
     float2 getPosition() const { return m_view.position; }
-
     float2 getSize() const { return m_view.sizePoints; }
+
+    void setIsOptions(MetaZone *mz) { m_isOptions = true; m_mz = mz; }
 
     MiniMap();
     ~MiniMap();
 
-    bool HandleEvent(const Event* event);
+    bool HandleEvent(const Event* event) override;
     void render(const View &view);
 
     static IconLabel getMapObjectiveIconType(const MapObjective* pbl);
@@ -82,7 +88,7 @@ public:
         return box;
     }
 
-    void renderTab(const View &view);
+    void renderTab(const View &view) override;
 };
 
 struct TargetData {

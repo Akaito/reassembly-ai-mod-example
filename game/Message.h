@@ -13,7 +13,7 @@ struct Messages {
     typedef vector< pair<string, float3> > PopupData;
     typedef unordered_map<string, lstring> Text_t;
     
-    unordered_map<lstring, lstring>  messages;
+    unordered_map<string, string>    messages;
     vector<string>                   tips;
     unordered_map<string, PopupData> popups;
     Text_t                           text;
@@ -21,15 +21,13 @@ struct Messages {
 
     void init();
     
-    static Messages& instance()
-    {
-        static Messages m;
-        return m;
-    }
+    static Messages& instance();
 
-    static lstring get(lstring key)
+    static string get(const string &key)
     {
-        return instance().messages[key];
+        const Messages &msg = instance();
+        auto it = msg.messages.find(key);
+        return (it != msg.messages.end()) ? it->second : key;
     }
 
     static string getTip(int idx)
@@ -40,7 +38,8 @@ struct Messages {
     }
 
 private:
-    Messages() { }
+    Messages();
+    ~Messages();
 };
 
 void updateBlockLanguage();

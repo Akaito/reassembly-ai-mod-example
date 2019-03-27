@@ -8,6 +8,9 @@
 
 float2 getHUDMarkerPos(bool* isOffScreen, float2 shipScreenPos, const View& view);
 float getDistScale(float2 screenPos, float2 screenSize);
+lstring getGameMusic();
+void playMainMenuMusic();
+void destroyFonts();
 
 struct Sector;
 struct GSList;
@@ -17,7 +20,7 @@ struct SaveData;
 extern int kBlurMenuRadius;
 extern string kSandboxScript;
 extern bool kTestAlwaysSaveBlueprints;
-extern bool kHeadlessMode;
+extern int kHeadlessMode;
 
 struct GameState
 {
@@ -97,6 +100,8 @@ private:
     GLRenderTexture    m_fbo;
     GameState*         m_staticBgState          = NULL;
 
+public:
+
     void push(GameState* self, GameState* s, uint idx);
 
     int getIndex(const GameState* gs) const
@@ -111,9 +116,9 @@ private:
 
     void setAnimStep(float time);
 
-public:
 
     GSList();
+    ~GSList();
 
     void init();
 
@@ -176,9 +181,10 @@ public:
 GameState *CreateMainMenu();
 ITabInterface *CreateProfileTab();
 GameState* CreateControls(GameState *parent, int tab);
-GameState *CreateGSAnisoptera();
+GameState *CreateGSAnisoptera(bool spl);
 void ImportFleetShip(GameState *self, SaveData *opbp, BlockCluster **opships);
 GameState *CreateBlueprintEditor();
+GameState *CreateGSNewGame(int slot, int seq);
 
 void doHeadlessSandbox();
 bool isOLExiting();
@@ -187,5 +193,10 @@ vector<int> getUsedSaveSlots();
 int getMaxUsedSaveSlot();
 
 std::map<string, string> getLanguageNames();
+string getDefaultLanguage();
+const char *getBuildConfig();
+
+DECLARE_ENUM(uint64, EProgress);
+bool pushPopupMessages(GameState *self, EProgress gate, float time, const char* message);
 
 #endif // GAME_H

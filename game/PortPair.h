@@ -8,7 +8,7 @@ struct Port;
 struct WatchPortPair;
 typedef vector<WatchPortPair> PortPairList;
 
-struct PortPair final {
+struct DLLFACE PortPair final {
     Block* handleBlock  = NULL; // the block being moved around (moves)
     uint   handleIndex  = 0;
     Block* connectBlock = NULL; // the block that we are attaching to (does not move)
@@ -76,8 +76,7 @@ struct PortPair final {
 
     // like connectPorts but both the connect and handle block may be part of larger clusters
     // move all blocks connected to the handle block
-    void connectPortsRecursive(uint queryVal) const;
-    void reconnectPortsRecursive(uint queryVal) const; // don't connect, just recalc pos
+    void connectPortsRecursive(uint queryVal, deque<PortPair> &queue) const;
     void attachRecursive() const;
 
     void connectAttachSubcluster() const;
@@ -104,9 +103,6 @@ struct PortPair final {
     bool canConnect(uint tests, GameZone* zone=NULL, const BlockPosition *connectPos=NULL,
                     const BlockCluster *spatialTestCluster=NULL) const;
 
-    // as above, but take into account any blocks connected to the handle block
-    bool canConnectPortsRecursive(GameZone* zone, const BlockPosition &connect,
-                                  const BlockCluster* connectCluster, uint queryVal) const;
     uint getActiveConnections(vector<WatchPortPair>& activeConnections, bool connectClusterOnly) const;
 
     void disconnectPorts() const;
@@ -142,7 +138,7 @@ struct PortPair final {
     }
 };
 
-struct WatchPortPair final {
+struct DLLFACE WatchPortPair final {
     watch_ptr<Block> handleBlock; // the block being moved around (moves)
     uint             handleIndex;
     watch_ptr<Block> connectBlock; // the block that we are attaching to (does not move)
@@ -171,11 +167,25 @@ struct WatchPortPair final {
 };
 
 
+
+struct ActiveData {
+    vector<WatchPortPair>             connections;
+    copy_ptr<GameZone>                ghost;
+    std::unordered_set<const Block*>  ghostBlocks;
+    int                               ghostConnections = 0;
+    vector<PortPair>                  temp;
+    deque<pair<PortPair, BlockPosition>> shared_queue;
+
+    ActiveData();
+    ~ActiveData();
+    void clear();
+    void clearGhost();
+};
+
 // find active pair list for cluster (i.e. cluster is moved by mouse)
 // RADIUS and PORTMASK filter ports on CL
 // if FEATURES is non zero, only connect to blocks with features
-struct ActiveData;
-void findConnectionsForCluster(BlockCluster *cl, ActiveData &active, float radius);
+void findConnectionsForCluster(BlockCluster *cl, ActiveData &active);
 
 // connect ports output from above function
 void connectActiveConnections(PortPairList& activeConnections);

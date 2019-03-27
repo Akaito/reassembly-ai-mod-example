@@ -25,6 +25,7 @@ int compactSaveSlot(int slot, float* m_progress);
     F(STREAM, 1<<2)                             \
     F(ASYNC, 1<<3)                              \
     F(ROUND, 1<<4)                              \
+    F(SOFT_BOUNDARY, 1<<5)                      \
 
 DEFINE_ENUM(uchar, EStreamerFlag, STREAMER_FLAGS);
 
@@ -36,12 +37,17 @@ struct StreamerSpec {
     float2 wpos;
     float2 wradius;
 
+    // gravity well 
+    float2 grav_pos;
+    float grav_rad = 0.f;
+
     // bounds are 0-bounds
     float2 bounds;
 
     StreamerSpec();
     StreamerSpec(float2 size);
     bool intersectCircleWindow(float2 pos, float rad) const;
+    bool intersectCircleWindowOnly(float2 pos, float rad) const;
 };
 
 
@@ -98,7 +104,7 @@ struct Sector final {
 
     string toString() const;
 
-    float2 getOffset() const { return float2(abspos.x + 0.5f, abspos.y + 0.5f) * 2.f * level.radius; }
+    float2 getOffset() const { return float2(abspos.x + 0.5f, abspos.y + 0.5f) * (2.f * level.radius); }
     float2 getRadius() const { return float2(level.radius); }
 
     string getSaveLevelFile() const;
@@ -127,6 +133,10 @@ protected:
     int           m_loadProgress = 0;
     bool          m_saveEnabled = true;
     SectorLimits  m_limits;
+    cpBody        m_body;
+
+    unordered_map<Faction_t, int> m_limits_factions;
+    BlueprintList                 m_limits_zoneClusters;
 
     // segment shapes around the whole loaded section to keep stuff from wandering off
     void createEdges();
@@ -160,6 +170,7 @@ public:
     virtual bool loadSectorData(Sector &sec);
     virtual void onEnableSave(SaveGame* sg) { }
     virtual void onSetZone() {}
+    virtual void shrink_to_fit() { }
 
     void setZone(GameZone* z) { m_zone = z; onSetZone(); }
 
@@ -167,11 +178,12 @@ public:
 
     const Sector* getSectorNearest(float2 pos) const { return const_cast<StreamerBase&>(*this).getSectorNearest(pos); }
 
-    // true if point is out of bounds
-    bool intersectPointBounds(float2 point) const;
+    // true if point is in loaded window
+    bool intersectPointWindow(float2 point) const;
+    bool intersectCircleWindow(float2 point, float r) const;
     float getSectorSize() const { return m_sectorSize; }
-    float2 getBoundsRadius() const;
-    int getBoundsEdges() const;
+    DLLFACE float2 getBoundsRadius() const;
+    DLLFACE int getBoundsEdges() const;
 };
 
 StreamerBase* CreateStreamer(const StreamerSpec &spec);

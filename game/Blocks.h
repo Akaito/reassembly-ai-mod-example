@@ -16,6 +16,32 @@ struct WeaponGroup;
 struct SaveData;
 DECLARE_ENUM(uchar, UIMode);
 
+
+struct FactionDamageTracker {
+
+    struct Stats {
+        int   p_destroyed      = 0.f;
+        float health_destroyed = 0.f;
+        int   kills            = 0;
+    };
+    
+    unordered_map<Faction_t, Stats> stats;
+    bool                            enabled = false;
+    std::mutex                      mutex;
+
+    static FactionDamageTracker &instance();
+    static void record_block_death(const Block *bl, Faction_t fac);
+    static Stats read(Faction_t fac);
+    static void reset(bool en);
+};
+
+struct Turret {
+    float                  angle       = 0.f;
+    RenderAngle            renderAngle;
+    float                  targetAngle = 0.f;
+    float                  spreadAngle = 0.f;
+};
+
 typedef vector<Port> PortList;
 typedef spatial_hash<Block*> BlockHash;
 
@@ -45,6 +71,7 @@ struct BlockShield final {
     void updateShape(Block *bl);
 };
 
+
 #define CLUSTER_CLASS_FIELDS(F)                  \
     F(DEBRIS, 0)                                 \
     F(SPACESHIP, 1)                              \
@@ -68,9 +95,11 @@ struct LiveCluster final {
     float                m_shieldBRadius = 0.f;
     float                m_power = 0.f;
     SpacerShape          m_spacer;
-    BlockHash*           m_blockHash         = NULL;
+    copy_ptr<BlockHash>  m_blockHash;
     float2               momentum;
 
+    vector<uchar>        m_sleeping;
+    
     LiveCluster(BlockCluster *cl);
     ~LiveCluster();
 
@@ -80,7 +109,7 @@ struct LiveCluster final {
     }
 };
 
-struct BlockCluster final : public Body {
+struct DLLFACE BlockCluster final : public Body {
 
     friend struct SpacerShape;
 
@@ -125,12 +154,15 @@ struct BlockCluster final : public Body {
     bool   hasCommand()          const;
     ClusterList&       getSubclusters()       { return m_subclusters; }
     const ClusterList& getSubclusters() const { return m_subclusters; }
-    DLLFACE int isMobile() const;
+    int isMobile() const;
     ClusterClass getClass() const;
     void overwriteFromId();
 
     void setColors(int3 colors) ;
     void applyColors();         // apply data.colors
+
+    const MapObjective *getCurrentField() const;
+    void setVelForOrbit(const MapObjective *grav=NULL);
 
     // return true if weapon with given faction collides with this cluster
     bool weaponCollide(Faction_t weaponFaction) const
@@ -171,7 +203,7 @@ struct BlockCluster final : public Body {
     bool   isMaybeVisible() const { return !live || live->m_maybeVisible; }
     void   setMaybeVisible(bool isVis) { if (live) live->m_maybeVisible = isVis; }
     EffectsParticleSystem* getParticles() const;
-    bool   isBodyStatic() const { const BlockCluster *cl = getBodyCluster(); return cl->live && cl->live->m_isStatic; }
+    bool   isBodyStatic() const;
     BlockHash *getBlockHash();
 
     // NO - in zone
@@ -192,11 +224,11 @@ private:
     float                 m_powerCapacity = 0.f;
     float                 m_resourceCapacity  = 0;
     float                 m_totalHealth = 0.f;
-    BPState               m_bpstate = BP_NO;
     float                 m_mass              = 0.f; // cpmass may be infinite!
     mutable int           m_refcount = 1;
     mutable rmutex        m_mutex;
-
+    BPState               m_bpstate = BP_NO;
+    
     // geometry for the whole cluster - regenerated when blocks are added or removed
     mutable bool          m_meshDirty = true;
     mutable ClusterMesh   m_mesh;
@@ -222,12 +254,24 @@ public:
         return &o == this;
     }
 
+    // use carefully
+    ClusterMesh &getMesh() { return m_mesh; }
+        
     BlockCluster();
     ~BlockCluster();
     void kill(int subidx);
     void killRecursive(int subidx);
     bool validateConnections(const Block *start=NULL, uint queryVal=0) const;
 
+    static void pool_purge();
+    static BlockCluster *pool_alloc();
+    static void pool_free(BlockCluster *cl);
+    static void pool_free(vector<BlockCluster *> &cls);
+    static void pool_free(vector<const BlockCluster *> &cls);
+    static void pool_free_mainthread(BlockCluster *cl);
+    static void pool_free_mainthread(vector<BlockCluster *> &cl);
+    static int pool_size();
+    
     void init();
     void makeLive() { if (!live) live = new LiveCluster(this); }
     void setAngleNoRotation(float sangle);
@@ -235,6 +279,7 @@ public:
 
     void repatchPorts();
     void patchPorts(PortList* freePorts);
+    void copyPorts(const BlockCluster &cl);
 
     // called in sequence
     void updateBegin();
@@ -251,7 +296,7 @@ public:
     void getNavConfig(snConfig* c) const;
 
     // return a bounding circle outside of which no sensors can detect
-    DLLFACE float getSensorRadius() const;
+    float getSensorRadius() const;
 
     // return a bounding circle inside of which at least one tractor can collect
     float getTractorBRadius() const { return m_tractorBRadius; }
@@ -291,6 +336,7 @@ public:
     int removeFromGameZone(int index);
     void removeFromGameZone() = delete;
     void addToGameZone(GameZone* zone, float2 pos);
+    void addToGameZone(GameZone* zone, float2 pos, float angle);
 
     // add a free block to a cluster
     // assumes caller sets up position and rotation of block relative to cluster
@@ -304,7 +350,7 @@ public:
     void attachSubcluster(BlockCluster *cl);
     void removeSubcluster(BlockCluster *cl, int idx);
     bool stitchSubcluster(BlockCluster *sub);
-    void stichDangling(const ClusterList &dangling);
+    void stitchDangling(const ClusterList &dangling);
     void detachFromParent(int index);
     int absorbSubclusters();
 
@@ -318,7 +364,7 @@ public:
     BlockCluster* instantiate() const;
     void onInstantiate(bool force=false);
     void makeVegetable(bool vegetal);
-    void addSpawnRes();
+    void onSpawn();
 
     Block* getFirstBlock(Feature_t feature);
 
@@ -386,6 +432,7 @@ public:
     bool isShared() const { return m_refcount > 1 || explicitOwner; }
 
     virtual void onQueueForDelete();
+    void shrink_to_fit();
 };
 
 struct BlockPosition final {
@@ -397,9 +444,9 @@ struct BlockPosition final {
     BlockPosition() {}
     BlockPosition(const Block* b);
     BlockPosition(const BlockCluster *cl, float2 bo, float ba);
-    BlockPosition(float2 cp, float ca, float2 bo, float ba) : 
+    BlockPosition(float2 cp, float ca, float2 bo, float ba) :
         clusterPos(cp), clusterAngle(ca), offset(bo), angle(ba) {}
-    BlockPosition(float2 cp, float ca) : 
+    BlockPosition(float2 cp, float ca) :
         clusterPos(cp), clusterAngle(ca), offset(0), angle(0) {}
 
     float2 getAbsolutePos() const
@@ -414,7 +461,7 @@ struct BlockPosition final {
 };
 
 
-struct Port final {
+struct DLLFACE Port final {
     Block* block = NULL;
     int    index = -1;
 
@@ -445,7 +492,7 @@ namespace std {
     };
 }
 
-struct Block final : public Watchable {
+struct DLLFACE Block final : public Watchable {
 
     friend bool exist(const Block *bl) { return bl && !bl->m_dead && exist(bl->cluster); }
     friend bool live(const Block *bl) { return exist(bl) && (bl->sb.health > 0); }
@@ -461,8 +508,7 @@ struct Block final : public Watchable {
 
     bool hasFreeRes() const;
     bool isInvulnerable() const;
-    float getSensorRadius() const { return (sb.command ? sb.command->sensorRadius :
-                                            cluster->getSensorRadius()); }
+    float getSensorRadius() const;
     bool canSkipShape() const;
 
     size_t getSizeof() const;
@@ -478,7 +524,7 @@ struct Block final : public Watchable {
     void onClusterInit();
     float2 getClusterPos() const { return cluster->getAbsolutePos(); }
     float getClusterBRadius() const { return cluster->getBRadius(); }
-    DLLFACE int getBlueprintDeadliness() const;
+    int getBlueprintDeadliness() const;
 
     bool isSensorVisible(const BlockCluster* cl) const;
     
@@ -508,11 +554,16 @@ struct Block final : public Watchable {
     lstring getShipAuthor() const;
 
     // return amount removed
-    float removeHealth(float v, Block* origin);
+    float removeHealth(float v, Block* origin, Faction_t remover=0);
     float removeShieldHealth(float v, float2 pos);
     float applyHealing(float val, uint color);
     float getMaxHealth() const { return m_maxHealth; }
-    float getMass() const { return round(spec->area * sb.density); }
+    
+    float getMass() const
+    {
+        float m = spec->area * sb.bt->density;
+        return (m < 1.f) ? m : round(m);
+    }
     float getHealRate() const { return m_healRate; }
     float calcHealRate() const;
     float getZGrowRate() const;
@@ -521,9 +572,9 @@ struct Block final : public Watchable {
     bool hasPowerToFire() const;
 
     // return true if firing weapon now will hit target, assuming linear motion
-    bool isWeaponAimed(const FiringData &target) const;
+    bool isWeaponAimed(const FiringData &target, bool speculative=false) const;
 
-    DLLFACE float2 weaponDirForTarget(float2 tpos, float2 tvel) const;
+    float2 weaponDirForTarget(float2 tpos, float2 tvel) const;
     float weaponAngleForTarget(float2 tpos, float2 tvel) const { return v2a(weaponDirForTarget(tpos, tvel)); }
 
     // actually enable weapon if it would hit target
@@ -546,6 +597,7 @@ struct Block final : public Watchable {
     static Block* fromShape(cpShape* shape);
     void createUpdateBlockShape(bool enabled, bool force);
     bool hasCircleShape() const { return shape && (m_flags&USE_CIRCLE_SHAPE); }
+    bool isSleeping() const;
 
     // for use from the render thread
     struct lock_guard {
@@ -574,13 +626,13 @@ struct Block final : public Watchable {
     SerialBlock             sb;
     const ShapeSpec        *spec       = NULL;
     BlockCluster*           cluster    = NULL;
+    int                     index      = -1;
     MapObjective*           persistent = NULL;
     watch_ptr<const Block>  obstruction; // block preventing a plant from growing. also used for modular cannons
     float2                  momentum;
 
 private:
     enum Flags { NEEDS_EFFECT_RENDER = 1<<1,
-                 NEEDS_HEAL_STARVE        = 1<<2,
                  USE_CIRCLE_SHAPE         = 1<<3,
                  WEAPON_OBSTRUCTED        = 1<<4 };
     uchar              m_flags = 0;
@@ -599,8 +651,9 @@ public:
     Port*             ports = NULL;
     cpShape*          shape = NULL;
 
-    void setEnabled(Feature_t feature, bool val=true) { setBits(m_enabled, feature, val); }
-    bool isEnabled(Feature_t feature) { return m_enabled&feature; }
+    bool setEnabled(Feature_t feature, bool val=true) { setBits(m_enabled, feature, val); return val; }
+    bool isEnabled(Feature_t feature) const { return m_enabled&feature; }
+    bool isActivated(float dt) const;
 
     // query values
     static uint       getNextQuery(); // get next query value
@@ -645,10 +698,13 @@ public:
     copy_ptr< vector< watch_ptr<ResourcePocket> > > tractorResources;
 
     void construct();
+    Block() = delete;
     Block(const Block&) = delete;
     Block(SerialBlock &&sb);
     Block(const SerialBlock &sb_);
     ~Block();
+
+    Block& operator=(const Block& o) = delete;
     void reset(); // reset, e.g. to change shape
 
     string toPrettyString() const;
@@ -661,7 +717,7 @@ public:
     void render(ClusterMesh *mesh) const;
     void renderToCache(ClusterMesh *mesh, const UIMode& uimode) const;
     void renderEffect(LumaMesh &ctx, const View& view) const;
-    void renderConstruct(LineMesh<VertexPosColor> &vl) const;
+    void renderConstruct(LineMesh<VertexPosColor> &vl, int depth=0) const;
     float getRenderSimTime() const;
 
 private: 
@@ -674,6 +730,7 @@ private:
     ResourcePocket* tractorLocate() const;
     void tractorUpdateLocate();
     void tractorUpdateGuide();
+    void tractorClear();
     uint assemblerUpdateGuide();
     void assemblerClearConnections();
     void moverInit();
@@ -687,8 +744,10 @@ private:
 
 public:
 
+    bool destroyIfOneUse();
     bool growUpdate(int cluster_index);
     bool launcherUpdate();      // return true if added block
+    bool launcherCanLaunch() const; // return true if launch is ready
     
     static MemoryPool &getMemoryPool();
     static void* operator new(std::size_t sz);
@@ -729,7 +788,7 @@ public:
     float  getAbsoluteAngle() const { return sb.angle + cluster->getAbsoluteAngle(); }
     float2 getAbsoluteRot() const { return angleToVector(getAbsoluteAngle()); }
     float  getRenderAngle() const { return sb.angle + cluster->getRenderAngle(); }
-    DLLFACE void   getNavConfig(snConfig* c) const;
+    void   getNavConfig(snConfig* c) const;
 
     float2 getPortAbsolutePos(uint i) const
     {
@@ -759,7 +818,8 @@ public:
 
     Port getConnectedPort(Feature_t ftrs) const
     {
-        for (uint i=0; i<spec->portCount; i++) {
+        const uint pc = spec->portCount;
+        for (uint i=0; i<pc; i++) {
             if (ports[i].block && (ports[i].block->sb.features&ftrs))
                 return ports[i];
         }
@@ -768,16 +828,23 @@ public:
 
     Port getConnectedPort() const
     {
-        for (uint i=0; i<spec->portCount; i++) {
+        const uint pc = spec->portCount;
+        for (uint i=0; i<pc; i++) {
             if (ports[i].block)
                 return ports[i];
         }
         return Port();
     }
 
+    Block* getConnectedBlock(Feature_t ftrs) const
+    {
+        return getConnectedPort(ftrs).block;
+    }
+
     bool anyPortsConnected() const
     {
-        for (uint i=0; i<spec->portCount; i++) {
+        const uint pc = spec->portCount;
+        for (uint i=0; i<pc; i++) {
             if (ports[i].block)
                 return true;
         }
@@ -786,7 +853,8 @@ public:
 
     bool anyPortsFree() const
     {
-        for (uint i=0; i<spec->portCount; i++) {
+        const uint pc = spec->portCount;
+        for (uint i=0; i<pc; i++) {
             if (isPortFree(i))
                 return true;
         }
@@ -795,7 +863,8 @@ public:
 
     bool allPortsConnected() const
     {
-        for (uint i=0; i<spec->portCount; i++) {
+        const uint pc = spec->portCount;
+        for (uint i=0; i<pc; i++) {
             if (isPortFree(i))
                 return false;
         }
@@ -805,7 +874,8 @@ public:
     int countConnectedPorts(Feature_t features=0) const
     {
         int c=0;
-        for (uint i=0; i<spec->portCount; i++) {
+        const uint pc = spec->portCount;
+        for (uint i=0; i<pc; i++) {
             if (ports[i].block && (!features || (features&ports[i].block->sb.features.get())))
                 c++;
         }
@@ -815,7 +885,8 @@ public:
     int countFreePorts() const
     {
         int c=0;
-        for (uint i=0; i<spec->portCount; i++) {
+        const uint pc = spec->portCount;
+        for (uint i=0; i<pc; i++) {
             if (isPortFree(i))
                 c++;
         }
@@ -832,8 +903,9 @@ public:
     float2 getWeaponMuzzleOffset() const;
     float  getWeaponRange() const;
     float  getWeaponVel() const;
+    float  weaponDPS() const;
     float  getWeaponPeriod() const;
-    DLLFACE void setWeaponEnabled(bool enable);
+    void setWeaponEnabled(bool enable);
 
     float2 getLaunchVel() const;
     bool   isLaunchEnoughRes() const;
@@ -847,7 +919,8 @@ public:
     int disconnect();             // return number of connections broken
     bool kill(int index);         // remove from game (return true if killed, false if unkillable)
     void killSilently(int index); // remove from game, without making an explosion or anything
-    bool doDeathExplode(Block *origin); // return true if dead
+    bool doDeathExplode(Block *origin, Faction_t remover=0); // return true if dead
+    void runDeathFeatures();
     float spawnDieResources();
 
     // Remove a block from it's cluster. Block will not be in any cluster.
@@ -886,6 +959,12 @@ PortPair launchConnection(Block* handle, Block *connect, float2 targetDir, float
 vector<PortPair> launchConnections(Block* handle, Block *connect, float2 targetDir, float minalign, uint canConnectFlags);
 
 int writeClusterImage(const BlockCluster *cl, const char* path);
+FireGroup getFireGroup(const Block *bl);
+
+void setPlayerErrorMessage(string m);
+
+deque<Block *> &getSharedQueueInstance(Block *bl, uint query);
+float2 tractorVel(float2 posDelta, float2 targetVel, float speed);
 
 template <typename T> bool exist(const watch_ptr<T> &ptr) { return exist(ptr.get()); }
 template <typename T> bool live(const watch_ptr<T> &ptr) { return live(ptr.get()); }

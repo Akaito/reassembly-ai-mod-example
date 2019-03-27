@@ -1,6 +1,5 @@
 
-#ifndef BLOCK_FONT_H
-#define BLOCK_FONT_H
+#pragma once
 
 #include "Mods.h"
 
@@ -14,13 +13,18 @@ static void scaleCluster(BlockCluster *cl, int scale)
     cl->init();
 }
 
+static const lstring l_proggy = lstring("proggy");
+static const lstring l_def = lstring("def");
+
 struct BlockFont {
 
     lstring                             name;
     int                                 scale = 1;
-    std::map<char, const BlockCluster*> data;
+    std::map<char, copy_ptr<const BlockCluster>> data;
     string                              path;
     static const uint persistentIdent = 0xc0011321;
+
+    typedef std::map< pair<lstring, int>, BlockFont> FontDatabase;
     
     typedef int VisitIndexedEnabled;
     
@@ -32,12 +36,12 @@ struct BlockFont {
 
     const BlockCluster *getCharCluster(char chr) const	
     {
-        return or_(map_get(data, chr), map_get(data, islower(chr) ? toupper(chr) : tolower(chr)));
+        return or_(map_get(data, chr).get(), map_get(data, islower(chr) ? toupper(chr) : tolower(chr)).get());
     }
 
     float2 getOffset(char chr) const
     {
-        if (name == "proggy")
+        if (name == l_proggy)
         {
             switch (chr) {
             case 'y':
@@ -47,7 +51,7 @@ struct BlockFont {
                 return justY(-2.f * scale * kComponentWidth);
             }
         }
-        else if (name == "def")
+        else if (name == l_def)
         {
             switch (chr) {
             case 'q': return justY(-scale * kComponentWidth);
@@ -59,13 +63,13 @@ struct BlockFont {
     float getLeft(char chr, const BlockCluster *bp) const
     {
         float width = -bp->bbox.mn.x;
-        if (name == "proggy")
+        if (name == l_proggy)
         {
             switch (chr) {
             case 'l': width -= scale * kComponentWidth; break;
             }
         }
-        else if (name == "def")
+        else if (name == l_def)
         {
             switch (chr) {
             case 't':
@@ -78,7 +82,7 @@ struct BlockFont {
     float getRight(char chr, const BlockCluster *bp) const
     {
         float width = bp->bbox.mx.x;
-        if (name == "def")
+        if (name == l_def)
         {
             switch (chr) {
             case 'q': width -= scale * 2.f * kComponentWidth; break;
@@ -204,10 +208,15 @@ struct BlockFont {
         return ts.size;
     }
 
+    static FontDatabase &instance()
+    {
+        static FontDatabase *fd = new FontDatabase();
+        return *fd;
+    }
+
     static BlockFont &get(lstring name, int scale)
     {
-        static std::map< pair<lstring, int>, BlockFont> fonts;
-        BlockFont &font = fonts[make_pair(name, scale)];
+        BlockFont &font = instance()[make_pair(name, scale)];
         if (font.data.empty())
         {
             foreach (OneMod *mod, TheMods::instance().load_mods)
@@ -230,11 +239,11 @@ struct BlockFont {
             }
             
             foreach (auto &x, font.data) {
-                BlockCluster *cl = const_cast<BlockCluster*>(x.second);
+                BlockCluster *cl = const_cast<BlockCluster*>(x.second.get());
                 scaleCluster(cl, scale-1);
                 foreach (Block *bl, cl->blocks)
                     bl->sb.features |= Block::ENVIRONMENTAL;
-                if (name == "def")
+                if (name == l_def)
                 {
                     foreach (Block *bl, cl->blocks)
                         bl->sb.features |= Block::INTLINES;
@@ -247,6 +256,3 @@ struct BlockFont {
     }
     
 };
-
-
-#endif // BLOCK_FONT_H

@@ -11,6 +11,8 @@ struct TournamentClass;
 GameState *CreateGSTournamentOptions();
 GameState *CreateGSTournament(TournamentClass *klass);
 void loadTournamentOptions();
+void playTournamentMusic(float foreground, float introAnim);
+
 
 struct TTeam final {
     ShipData      data;
@@ -123,7 +125,7 @@ struct TournamentClass final {
         if (ownsShips)
         {
             foreach (auto &&x, teams)
-                vec_clear_deep(x.blueprints);
+                BlockCluster::pool_free(x.blueprints);
         }
     }
 
@@ -218,19 +220,25 @@ public:
 
 struct GSArena final : public GameState {
 
-    ArenaMatch       *match;
+    ArenaMatch       *match = NULL;
+    vector<TTeam>     teams;
     int               round = 0;
     float             endTime = 0.f;
     float             m_size = 0.f;
-    
-    copy_ptr<MetaZone> m_mz;
-    copy_ptr<SaveGame> m_save;
+    mutable float     m_radius = 0.f;
+    bool              m_advanced = false;
+
+    copy_ptr<MetaZone>     m_mz;
+    copy_ptr<SaveGame>     m_save;
+    copy_ptr<MapObjective> m_field;
 
     struct ShipSummary {
         watch_ptr<Block> command;
         const int        pointsTotal;
-        int              pointsClaimed  = 0;
-        ShipSummary(Block *bl) : command(bl), pointsTotal(bl->getBlueprintDeadliness()) {}
+        int              pointsUndamaged  = 0;
+        ShipSummary(Block *bl) : command(bl),
+                                 pointsTotal(bl->getBlueprintDeadliness()),
+                                 pointsUndamaged(pointsTotal) {}
     };
     
     struct FleetSummary {
@@ -238,37 +246,58 @@ struct GSArena final : public GameState {
         string                name;
         string                author;
         uint                  color         = 0;
-        int                   pointsClaimed = 0; // scored against us
+        int                   pointsUndamaged = 0; // scored against us
         int                   liveCount     = 0;
         const char*           state         = "";
-        mutable ClusterWindow window;
+        int                   faction = 0;
         int                   wins = 0;
-    } sdat[2];
-    
+
+        int points() const;
+    };
+
+    int window_teams[2];
+    mutable ClusterWindow windows[2];
+    vector<FleetSummary> sdat;
     ChaseCam          m_chase;
+    int               winner=-1;
     int               lastwin=-1;
     OverlayMessage    helpText;
     bool              viewMode = false;
     bool              manualCamera = false;
+
+    float getDeployRadius() const;
+    void init();
+    int teamCount() const { return match ? 2 : teams.size(); }
+    TTeam getTeam(int idx) const
+    {
+        return match ? (idx ? match->getRight() : match->getLeft()) : teams[idx];
+    }
+    float arenaRadius() const;
     
-    void spawnFleet(GameZone *zone, int idx, ChaseCam::CamFocus &cam);
+    void spawnFleet(GameZone *zone, int idx, ChaseCam::CamFocus &cam, float rad);
     void reset();
     GSArena(ArenaMatch* mch);
-    void onPush();
+    GSArena(vector<TTeam> tt);
+    void onPush() override;
 
     ~GSArena();
     
-    void updateView(bool sizeChanged);
+    void updateView(bool sizeChanged) override;
+
+    void playMusic(float foreground, float introAnim) override
+    {
+        playTournamentMusic(foreground, introAnim);
+    }
 
     void renderWindow(const ShaderState &ss, DMesh &mesh, vector<TextBoxString> &text,
                       const View &view, int idx, float2 pos, float2 rad, float alpha);
-    void render(const View &view);
+    void render(const View &view) override;
 
-    void renderCursor(const View &view) { }
+    void renderCursor(const View &view) override { }
 
-    GameZone* step(bool fs);
+    GameZone* step(bool fs) override;
     
-    bool HandleEvent(const Event* event);
+    bool HandleEvent(const Event* event) override;
 };
 
 
@@ -289,12 +318,12 @@ struct GSTournamentBase : public GameState {
 
     virtual AABBox positionButtons(const View &view) = 0;
     virtual void renderOver(const ShaderState &ss, const View &view)  {}
-    virtual bool isAnimating() const { return true; }
+    virtual bool isAnimating() const override { return true; }
 
-    void render(const View &view);
-    GameZone *step(bool fs);
+    void render(const View &view) override;
+    GameZone *step(bool fs) override;
 
-    bool HandleEvent(const Event* event);
+    bool HandleEvent(const Event* event) override;
 };
 
 
@@ -311,7 +340,7 @@ struct GSBracket final : public GSTournamentBase {
         matches = &bracket;
     }
 
-    AABBox positionButtons(const View &view);
+    AABBox positionButtons(const View &view) override;
     void setupTree(ArenaMatch *m, int dep, float2 pos, float2 delta);
 };
 
@@ -321,8 +350,8 @@ struct GSPool final : public GSTournamentBase {
     
     GSPool(TournamentClass *p, bool it=false);
 
-    AABBox positionButtons(const View &view);
-    void renderOver(const ShaderState &ss, const View &view);
+    AABBox positionButtons(const View &view) override;
+    void renderOver(const ShaderState &ss, const View &view) override;
 };
 
 

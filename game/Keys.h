@@ -4,6 +4,11 @@
 
 #include "Save.h"
 
+inline bool isMouseKey(int i)
+{
+    return (LeftMouseButton <= i && i <= MouseButtonSix);
+}
+
 struct KeyBinding {
 
     enum Group {
@@ -59,9 +64,22 @@ struct KeyBinding {
     
     bool isEnabled() const
     {
+        const KeyState &ks = KeyState::instance();
         for (int i=0; i<NUM_KEYS; i++)
-            if (keys[i] && KeyState::instance()[keys[i]])
+            if (keys[i] && ks[keys[i]])
                 return true;
+        return false;
+    }
+
+    // like isEnabled but ignore mouse buttons
+    bool isKeyEnabled(bool enableMouse=false) const
+    {
+        const KeyState &ks = KeyState::instance();
+        for (int i=0; i<NUM_KEYS; i++)
+        {
+            if (keys[i] && (enableMouse || !isMouseKey(keys[i])) && ks[keys[i]])
+                return true;
+        }
         return false;
     }
     
@@ -136,8 +154,13 @@ struct KeyBindings : public Serializable<KeyBindings> {
     DEF_BINDING(sright, _("Strafe Right"), FLYING, 'e', 0);
     DEF_BINDING(target, _("Lock Target"), FLYING, ' ', GamepadRightStick);
     DEF_BINDING(activate, _("Spawn Child"), FLYING, 'f', GamepadA);
-    DEF_BINDING(transferRes, _("Transfer Resources"), FLYING, 'c', GamepadLeftShoulder);
+    DEF_BINDING(transferRes, _("Transfer Resources"), FLYING, 'c', 0);
+    DEF_BINDING(utility0, _("Utility Primary"), FLYING, OShiftKey, GamepadLeftShoulder);
+    DEF_BINDING(utility1, _("Utility Secondary"), FLYING, 'z', 0);
+    DEF_BINDING(utility2, _("Utility Tertiary"), FLYING, '4', 0);
+    
     DEF_BINDING(teleport, _("Teleport"), FLYING, 'z', 0);
+    DEF_BINDING(destruct, _("Self Destruct"), FLYING, 'j', 0);
     DEF_BINDING(toggleTractor, _("Toggle Command mode"), FLYING, '\t', GamepadX);
     DEF_BINDING(viewMap, _("View Map"), FLYING, 'm', GamepadBack);
     DEF_BINDING(viewBindings, _("View Weapon Bindings"), FLYING, 'b', 0);
@@ -186,15 +209,6 @@ struct KeyBindings : public Serializable<KeyBindings> {
     enum Constants {
         FireKeyCount = 3
     };
-
-    enum FireGroups {
-        FG_PRIMARY=0,
-        FG_SECONDARY,
-        FG_TERTIARY,
-        FG_AUTO,
-        FG_DEFENSE,
-        FG_COUNT
-    };
     
     typedef int VisitEnabled;
     
@@ -212,8 +226,8 @@ struct KeyBindings : public Serializable<KeyBindings> {
 
     KeyBindings();
 
-    float2 getTranslation() const;
-    float2 getTranslationWASD() const;
+    float2 getTranslation(bool enableMouse=false) const;
+    float2 getTranslationWASD(bool enableMouse=false) const;
     float2 getTranslationVertical() const;
     int2 getMenuTranslation(const Event *event) const;
     float getZoom() const;

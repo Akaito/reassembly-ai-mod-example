@@ -27,6 +27,7 @@ struct SerialCluster {
 
     // serialized fields
     float2               position;
+    float2               velocity;
     float                angle  = 0;
     lstring              name;
     uint                 hash = 0;
@@ -61,6 +62,7 @@ struct SerialCluster {
     bool accept(V& vis)
     {
         return vis.VISIT(position) &&
+            vis.VISIT(velocity) &&
             vis.VISIT(angle) &&
             vis.VISIT(name) &&
             vis.VISIT(hash) &&
@@ -72,6 +74,7 @@ struct SerialCluster {
     bool operator==(const SerialCluster &o) const
     {
         return position == o.position &&
+            velocity == o.velocity &&
             angle == o.angle &&
             name == o.name &&
             data == o.data &&
@@ -101,12 +104,7 @@ struct Level {
         clear();
     }
 
-    void clear()
-    {
-        vec_clear_deep(cachedClusters);
-        clusters.clear();
-        time = 0;
-    }
+    void clear();
     
     int expandToCache();
     int injectCachedToZone(GameZone *zone);
@@ -128,7 +126,7 @@ struct Level {
     void serialize(SaveSerializer& sr, const BlockCluster *bc) const;
     void serializeHeader(SaveSerializer &sr, int t=0) const;
     
-    bool placeRandomly(GameZone *zone, BlockCluster *cl) const;
+    bool placeRandomly(GameZone *zone, BlockCluster *cl, float angle=-1.f) const;
 };
 
 
@@ -159,7 +157,11 @@ struct Fleetspec {
     BlueprintList compose(SaveGame *save) const;
 };
 
-int deployFleet(BlockList &fleet, GameZone *zone, float2 pos, float2 rad, Block *leader=NULL);
+int deployFleet(BlockList &fleet, GameZone *zone, float2 pos, float angle, float2 rad, Block *leader=NULL);
+inline int deployFleet(BlockList &fleet, GameZone *zone, float2 pos, float2 rad, Block *leader=NULL)
+{
+    return deployFleet(fleet, zone, pos, randangle(), rad, leader);
+}
 const BlockCluster* selectShip(SaveGame *save, int faction, int deadly_low, int deadly_high);
 
 void addFactionDebris(GameZone* zone, Faction_t faction, Faction_t faction1, uint totalBlocks, float2 pos, float radius);

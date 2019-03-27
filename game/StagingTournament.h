@@ -11,6 +11,7 @@ struct BSave final : public Button {
 
     std::mutex                    mutex;
     ClusterWindow                 window;
+    int                           slot = -1;
     SaveData                      save;
     volatile SaveData::SaveStatus saveStatus;
 
@@ -18,6 +19,7 @@ struct BSave final : public Button {
     {
         textSize = 18.f;
         subtextSize = 14.f;
+        
     }
     
     BSave(int slot) : BSave() { setSlot(slot); }
@@ -33,32 +35,20 @@ struct BSave final : public Button {
     bool isEmpty() const { return saveStatus == SaveData::NOT_FOUND; }
     bool isOld() const { return saveStatus == SaveData::OLD_VERSION; }
 
-    void renderButton(DMesh& mesh, bool selected)
+    void renderButton(DMesh& mesh, bool selected) override
     {
         if (!visible)
             return;
         PushButton(&mesh.tri, &mesh.line, position, size/2.f, getBGColor(), getFGColor(selected), alpha);
     }
 
-    void renderContents(const ShaderState &ss);
+    void renderContents(const ShaderState &ss) override;
+    void renderContents1(const ShaderState &ss) override;
 
-    ~BSave()
-    {
-        // wait for load to complete before deleting
-        while (1)
-        {
-            {
-                std::lock_guard<std::mutex> l0(mutex);
-                if (!isLoading())
-                    return;
-            }
-
-            globals.waitForLoaderThread();
-        }
-    }
+    ~BSave();
 };
 
-struct BTeam : public Button {
+struct BTeam final : public Button {
 
     ClusterWindow window;
     TTeam         team;
@@ -68,19 +58,21 @@ struct BTeam : public Button {
     BTeam(const BlockCluster *cl) : team(cl) {}
     BTeam(const SaveData *sd) : team(sd) {}
 
-    void renderContents(const ShaderState &ss)
+    void renderContents(const ShaderState &ss) override
     {
         const BlockCluster *cl = team.leader();
         if (!cl || !visible)
             return;
         window.RecordDraw(cl, cl->getRenderAngle() - (M_PIf/8.f),
                           size - kButtonPad, &ss, position, alpha);
-
+    }
+    
+    void renderContents1(const ShaderState &ss) override
+    {
         const float tht = floor(size.y / 8.f);
         GLText::Fmt(ss, position - size/2.f + kButtonPad, GLText::LEFT,
                     SetAlphaAXXX(COLOR_ENERGIZE0, alpha), tht, "%d ships\n%dP",
                     (int)team.blueprints.size(), team.totalP);
-
         bt.renderText(ss, position + size/2.f - kButtonPad, size.x, GLText::DOWN_RIGHT,
                       MultAlphaAXXX(kGUIText, alpha), 0.5f * tht, tht, team.data.name.str());
     }
@@ -92,7 +84,8 @@ static string getSteamFriendsError()
     string neterror = Network::instance().getError();
     if (neterror.empty())
         return !Network::instance().isLoggedIn() ? _("Not logged in") : _("Unknown");
-    return str_contains(neterror, "Unauthorized") ? string(_("Steam Profile is Private")) : neterror;
+    return str_contains(neterror, "Unauthorized") ? string(_("Profile is Private")) : 
+		str_substr(neterror, 0, 40);
 }
 
 
@@ -141,7 +134,8 @@ struct GSStaging : public GameState {
         right1.dims = int2(3, 7);
         left0.dims = int2(3, 5);
         left1.dims = int2(3, 6);
-        foreach (int sl, getUsedSaveSlots())
+        vector<int> slots = getUsedSaveSlots();
+        foreach (int sl, slots)
         {
             BSave *sb = new BSave(sl);
             right0.pushButton(sb);
@@ -155,6 +149,11 @@ struct GSStaging : public GameState {
     }
 
     ~GSStaging() { }
+
+    void playMusic(float foreground, float introAnim) override
+    {
+        playTournamentMusic(foreground, introAnim);
+    }
 
     void leftUpdateTeam()
     {
@@ -277,7 +276,7 @@ struct GSStaging : public GameState {
             }
         }
 
-        if (isSteamEnabled())
+        if (Network::instance().isSteamAuth())
         {
             Network &nw = Network::instance();
             if (downloadState == 0 && !nw.isLoggedIn() && !nw.isBusy()) {
@@ -301,7 +300,7 @@ struct GSStaging : public GameState {
                         foreach (SaveData &sd, net_agents)
                         {
                             BSave *sb = new BSave;
-                            if (sb->setData(sd, _("Steam Friends"))) {
+                            if (sb->setData(sd, _("Friends"))) {
                                 right0.buttons.push_back(sb);
                             } else {
                                 delete sb;
@@ -449,15 +448,15 @@ struct GSStaging : public GameState {
             renderWidget(rightBack, ss);
         }
 
-        if (isSteamEnabled())
+        if (Network::instance().isSteamAuth())
         {
             string netmsg;
             if (downloadState == -1) {
-                netmsg = _("Steam Friends Unavailable: ") + getSteamFriendsError();
+                netmsg = _("Friends Unavailable: ") + getSteamFriendsError();
             } else if (downloadState == 0) { 
                 netmsg = _("Logging in...");
             } else if (downloadState == 1) {
-                netmsg = str_format(_("Downloading Steam Friend Ships: %.f%%"),
+                netmsg = str_format(_("Downloading Friend Ships: %.f%%"),
                                     100.f * Network::instance().getProgress());
             }
             if (netmsg.size()) {
@@ -668,7 +667,7 @@ struct GSStaging : public GameState {
                 if (isActivate)
                 {
                     if (!importShip)
-                        importShip = new BlockCluster();
+                        importShip = BlockCluster::pool_alloc();
                     ImportFleetShip(this, &importBlueprints, &importShip);
                 }
                 return true;

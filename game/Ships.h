@@ -27,6 +27,7 @@ struct AIModData {
     int                 versionMinor  = -1;
     Mod_GetApiVersion   getApiVersion = nullptr;
     Mod_CreateAiActions createActions = nullptr;
+    LoadStatus          loadStatus    = LS_UNKNOWN;
 
     AIModData() {}
 };
@@ -43,6 +44,7 @@ struct FactionData {
     lstring          start;     // starting ship name
     string           name;      // name of faction
     int              thrustSFX = 0;
+    lstring          thrustSound;
 
     Faction_t        faction = 0;
     string           root;
@@ -62,7 +64,8 @@ struct FactionData {
             vis.VISIT(playable) &&
             vis.VISIT(start) &&
             vis.VISIT(name) &&
-            vis.VISIT(thrustSFX);
+            vis.VISIT(thrustSFX) &&
+            vis.VISIT(thrustSound);
     }
 
     int3 getColors() const { return int3(color0, color1, color2); }
@@ -98,6 +101,8 @@ public:
 
     float loadProgress = 0.f;
     void setAllowLoad(bool al) { allowLoad = al; }
+
+    void deleteAll();
     
     const BlockCluster* getBlueprint(lstring name, bool allowCreate=false) const;
 
@@ -109,8 +114,8 @@ public:
     int expandShipRegexes(vector<lstring>& tier) const;
 
     const BlockCluster* loadShip(lstring name, BlockCluster *bc);
-    const BlockCluster* loadShip(const char* path, lstring name, lstring author,
-                                 SerialCluster *source, const FactionData *fac, const OneMod *mod);     // load a particular ship
+    const BlockCluster* loadShip(SerialCluster &sc, lstring name, lstring author,
+                                 const FactionData *fac, const OneMod *mod);     // load a particular ship
     
     void loadTheShips();
     void loadFactionsOnly() { loadFactionsFrom("data", 0); }
@@ -139,51 +144,70 @@ public:
 };
 
 
+struct BlockEntry
+{
+    SerialBlock            first;
+    copy_ptr<SerialBlock>  second;
+    BlockType              bt;
+    lstring                name;
+    lstring                blurb;
+    const OneMod          *mod = NULL;
+};
+typedef std::unordered_map<BlockId_t, unique_ptr<BlockEntry>> BlockMap;
+
+struct IndexReadData {
+    std::map<BlockId_t, SerialBlock>               tempBlocks;
+    vector<BlockType*>                             freeList;
+    std::unordered_map<BlockId_t, shared_ptr<ParserLocation>> blockSources;
+    BlockMap                                       lastAllBlocks;
+
+    IndexReadData();
+    ~IndexReadData();
+};
+
 struct BlockIndex {
-
-    BlockIndex() : lastIdent(kMaxBlockId + 1) {}
-
-    typedef pair<SerialBlock, SerialBlock> BlockEntry;
-    typedef std::unordered_map<BlockId_t, BlockEntry> BlockMap;
 
     const SerialBlock* serialBlockFromId(BlockId_t ident) const;
     
     const BlockMap& getAllBlocks() const { return allBlocks; }
+    BlockEntry *getRecolorBase(BlockId_t ident);
 
     const vector<BlockId_t> &getGroupIds(Faction_t group) const {
         static const vector<BlockId_t> def;
         return map_get(groupBlocks, group, def);
     }
 
-    BlockId_t lookup(const SerialBlock &sb) const;
-
     bool readTheBlocks(int reload, float *progress);
-    void onParseBlock(SaveParser *sp, SerialBlock *sb, const ParserLocation &loc);
+    void onParseBlock(SaveParser *sp, SerialBlock *sb, bool is_ref, shared_ptr<ParserLocation> &loc);
 
     void recolorGroup(Faction_t group, int3 colors);
     int4 getRecolor() const { return m_recolor; }
     
     const SerialBlock *getFactionCommand(Faction_t fac) const;
-    const SerialBlock *getFactionCommandOrig(Faction_t fac) const;
 
     const OneMod                      *currentMod = NULL;
-    std::map<BlockId_t, SerialBlock>   tempBlocks;
 
-    const SerialBlock *intern(SerialBlock &sb, const ParserLocation &loc);
+    const SerialBlock *intern(SerialBlock &sb, shared_ptr<ParserLocation> &loc);
     enum ReadPriority { RD_DISABLE, RD_OVERWRITE, RD_FILL };
     bool isReading() const { return m_isReading != RD_DISABLE; }
-    void setReading(ReadPriority is) { m_isReading = is; }
+    void setReading(ReadPriority is);
     LogRecorder *getLogger() const;
+    const BlockEntry *get_entry(BlockId_t ident);
+
+    void deleteAll();
+
+    const BlockType *get_blocktype(BlockId_t ident);
+    unique_ptr<IndexReadData> read;
 
 private:
     void createTheBlocks(int reload);
     bool readBlocksFrom(const OneMod *mod);
+    BlockEntry &get_create_entry(BlockId_t ident);
 
     int4      m_recolor;
     ReadPriority m_isReading = RD_DISABLE;
-    BlockId_t lastIdent   = ~0;
+    BlockId_t lastIdent   = 0;
     BlockMap  allBlocks;
-    std::unordered_map<BlockId_t, ParserLocation*> blockSources;
     std::map<Faction_t, vector<BlockId_t> > groupBlocks;
 };
 
@@ -209,5 +233,8 @@ bool parseShipName(const char* file, string *name, Faction_t *faction);
 lstring relocateShip(lstring name, const OneMod *mod);
 
 const BlockCluster *getIndexedBlueprint(lstring name, bool allowCreate=false);
+
+void clearTempZone();
+void releaseClusters(SerialBlock *sb);
 
 #endif /* defined(__Outlaws__Ships__) */

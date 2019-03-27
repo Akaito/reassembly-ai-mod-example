@@ -90,8 +90,7 @@ struct BlockTool {
         cluster->init();
         float2 p = findEmptySpaceSafely(zone, cluster->getBRadius(), center, rmin, rmax);
         ASSERT(p != float2(0));
-        cluster->setAngle(randangle());
-        cluster->addToGameZone(zone, p);
+        cluster->addToGameZone(zone, p, randangle());
         return *this;
     }
     
@@ -100,8 +99,7 @@ struct BlockTool {
         cluster->init();
         float2 p = findEmptySpace(zone, cluster->getBRadius(), center, rmin, rmax);
         ASSERT(p != float2(0));
-        cluster->setAngle(randangle());
-        cluster->addToGameZone(zone, p);
+        cluster->addToGameZone(zone, p, randangle());
         return *this;
     }
 
@@ -110,8 +108,7 @@ struct BlockTool {
         cluster->init();
         float2 p = findEmptySpace(zone, cluster->getBRadius(), center, rmax);
         ASSERT(p != float2(0));
-        cluster->setAngle(randangle());
-        cluster->addToGameZone(zone, p);
+        cluster->addToGameZone(zone, p, randangle());
         return *this;
     }
 

@@ -78,7 +78,8 @@ static const float kAsteroidDensity  = 0.5f;
     F(MISSILE_LAUNCHER, 68)                               \
     F(MISSILE_SHORT, 69)                                  \
     F(COMMAND_MISSILE, 70)                                \
-    F(COUNT, 71)                                          \
+    F(THRUSTER_NOSTACK, 71)                               \
+    F(COUNT, 72)                                          \
     F(RESERVED_LAST, 99)
 
 
@@ -104,9 +105,34 @@ DEFINE_ENUM(ushort, EPort, PORT_TYPES);
 #define TO_PORT_ENUM(X, V) PORT_##X=V,
 enum PortType : EPort::value_type { PORT_TYPES(TO_PORT_ENUM) };
 
-static const uint kShapeMaxVerts = 16;
+static const uint kShapeMaxVerts = 32;
 static const uint kPlayerDefaultColor0 = 0x113077u;
 static const uint kPlayerDefaultColor1 = 0xaaaaaau;
+
+template <typename T>
+struct group_ptr {
+    T *ptr = NULL;
+
+    ~group_ptr()
+    {
+        reset();
+    }
+
+    void reset(T *p=NULL)
+    {
+        delete[] ((char*) ptr);
+        ptr = p;
+    }
+    
+    T &operator[](int i) { return ptr[i]; };
+    const T &operator[](int i) const { return ptr[i]; };
+    T &operator*() { return *ptr; }
+    const T &operator*() const { return *ptr; }
+
+    T* get() { return ptr; }
+    const T* get() const { return ptr; }
+    
+};
 
 struct ShapeSpec {
 
@@ -133,20 +159,22 @@ struct ShapeSpec {
     AABBox         bbox;
     float          area              = 0.f;
     float          sqrt_area         = 0.f;
-    PortPos*       ports             = NULL;
+    group_ptr<PortPos> ports;
     const float2*  vertices          = NULL;
     const cpVect*  cpVerts           = NULL;
     const uint*    lineIndices       = NULL; // indices for GL_LINES of outline
     const uint*    triIndices        = NULL; // indices for GL_TRIANGLES of inside
     uchar          lineIndexCount    = 0;
     uchar          triIndexCount     = 0;
-    const Block   *example           = NULL;
+    unique_ptr<const Block> example;
 
     // used for creation
-    bool fillVerts(uint portCount, const vector<float2> &verts);
-    bool finalizeVerts();
-    void finalizePorts();
+    bool fillVerts(uint portCount, const vector<float2> &verts, const SaveParser *log=NULL, uint *vertmap=NULL);
+    bool finalizeVerts(const SaveParser *log=NULL, uint *vertmap=NULL);
+    void finalizePorts(const SaveParser *log=NULL);
     void makeMirror(EShape shape, ShapeSpec &spec);
+    void copy_stuff(const ShapeSpec &spec);
+    void overwrite(ShapeSpec && spec);
 
     // queries
     bool isRegular() const;
@@ -159,18 +187,22 @@ struct ShapeSpec {
     int inPortThruster() const; // -1 if no in port
     int outPortWeapon() const; // -1 if no out port
     int inPortWeapon() const; // -1 if no in port
+
+    ShapeSpec();
+    ~ShapeSpec();
 };
 
-bool isSimilar(EShape a, int size, EShape b, int bs);
+int isSimilar(EShape a, int size, EShape b, int bs);
 BlockShape sidesShape(int sides);
-uint getMirrorBlockIdent(uint ident);
-uint getMinimizedIdent(uint ident);
-uint getDefaultIdent(uint ident);
+BlockId_t getMinimizedIdent(BlockId_t ident);
+BlockId_t getDefaultIdent(BlockId_t ident);
 void minimizeBlockIds(vector<BlockId_t>& idents);
 const SerialBlock *getScaleBlock(const SerialBlock &sb, int scalediff, const vector<BlockId_t> &limitIds);
-uint getRefactionBlock(BlockId_t ident, Faction_t oldfaction, Faction_t newfaction);
+BlockId_t getRefactionBlock(BlockId_t ident, Faction_t oldfaction, Faction_t newfaction);
 
 struct OneMod;
 void loadShapesFor(const OneMod *mod);
+
+void deleteAllShapes();
 
 #endif

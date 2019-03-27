@@ -25,7 +25,8 @@ public:
         muzzleFlash(float3(pos, 2.52f), vel, size, color, time);
     }
     void muzzleFlash(float3 pos, float2 vel, float size, uint color, float time);
-    void thrust(float2 pos, float2 vel, float angle, float size, uint color);
+    void thrust(float2 pos, float2 vel, float size, uint color,
+                float2 vel2, float size2, uint color2);
     void particle(float3 pos, float2 vel, float size, float time, uint color, float alpha);
 
     void magicSpark(float2 pos);
@@ -40,6 +41,11 @@ public:
     void smokeExplodeTrail(float2 pos, float rad);
     void xpTrail(float2 pos, float rad, uint color0, uint color1);
 
+    EffectsParticleSystem *getParticles(float2 pos, float rad)
+    {
+        return visible(pos, rad) ? this : NULL;
+    }
+    
 };
 
 

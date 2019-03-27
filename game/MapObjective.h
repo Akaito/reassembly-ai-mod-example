@@ -17,16 +17,20 @@ struct Agent;
     F(ACTIVATED, 1<<4)                          \
     F(DESTROYED, 1<<5)                          \
     F(WORMHOLE, 1<<6)                           \
-    F(HIDDEN, 1<<7)                             \
     F(WAS_TARGET, 1<<8)                         \
     F(VISIBLE, 1<<9)                            \
     F(OBJECTIVE, 1<<10)                         \
     F(MESSAGE, 1<<11)                           \
     F(TELESTATION, 1<<12)                       \
     F(CONTESTED, 1<<13)                         \
+    F(GRAVITY, 1<<14)                           \
+    F(RADIATION, 1<<15)                         \
+    F(SLOW, 1<<16)                              \
+    F(BORDER, 1<<17)                            \
 
     
 DEFINE_ENUM(uint, EObjective, ENUM_OBJECTIVE_FLAGS);
+
 
 struct MapObjective final : public Watchable {
 
@@ -36,9 +40,10 @@ private:
     // serialized fields
     float2        position;     // wrapped position
     float2        destination;
+    float         radius = 0.f; // for weather
     EObjective    flags;        // type of objective
-    uint          ident = 0;    // used to associate with a particular block
-    int           faction = 0;
+    BlockId_t     ident = 0;    // used to associate with a particular block
+    Faction_t     faction = 0;
     lstring       message;
 
     const MetaZone*   mz = NULL;
@@ -46,7 +51,7 @@ private:
 
 public:
     MapObjective() {}
-    MapObjective(const MetaZone* m, float2 pos, EObjective flgs) : position(pos), flags(flgs), mz(m){ }
+    MapObjective(const MetaZone* m, float2 pos, EObjective flgs) : position(pos), flags(flgs), mz(m) { }
     MapObjective(const MetaZone* m, Block *bl, EObjective flgs) : flags(flgs), mz(m) { onAssociate(bl); }
     ~MapObjective();
 
@@ -67,11 +72,16 @@ public:
 
     Block* getBlock()     const { return block.get(); }
     friend bool exist(const MapObjective *mp);
-    float2 getPos()       const;
+    float2 getPos(float2 pos=f2()) const;
     float2 getWrappedPos() const;
+    bool intersectPoint(float2 p) const;
+    float2 getWrapSize() const;
     float2 getRenderPos(const View &view) const;
     float  getRenderBRadius() const; // bradius of cluster, or zero
     uint   getIdent() const { return ident; }
+    float  getRadius() const { return radius; }
+    void   setRadius(float rad) { radius = rad; }
+    float  getGrav() const;
     
     bool isActivated() const { return flags&EObjective::ACTIVATED; }
     bool isDestroyed() const { return flags&EObjective::DESTROYED; }
@@ -83,7 +93,8 @@ public:
     bool isWormhole() const { return flags&EObjective::WORMHOLE; }
     EObjective getFlags() const { return flags; }
 
-    void markVisible() { flags |= EObjective::VISIBLE; }
+    bool isGravity() const { return flags&EObjective::GRAVITY; }
+
     void updateContested();
     
     void onBlockKilled();
@@ -110,19 +121,20 @@ public:
     void onAssociate(Block* bl);  // MapObjective copies to block
 
     // generate new live block, and any attachements
-    bool needsLevelFill(const Level *level);
+    bool needsLevelFill(const Level *level) const;
     void onLevelFill(GameZone* zone, const Level* level);
+    void afterLevelFill(GameZone* zone, const Level* level);
 
     bool canActivate() const;
 
     // player manually activated: transform or disappear 
     void onActivate();
 
-    // player did something to make visible
-    void onReveal(GameZone *zone);
-
     // agent captured territory
     bool onLost();
+
+    void onZoneUpdate(GameZone *zone) const;
+    void onCommandUpdate() const;
     
     void updateForSerialization();
 
@@ -134,6 +146,7 @@ public:
                 vis.VISIT(ident) &&
                 vis.VISIT(faction) &&
                 vis.VISIT(message) &&
+                vis.VISIT(radius) &&
                 vis.VISIT_SKIP(int, "blockReward") &&
                 vis.VISIT_SKIP(bool, "instantiated") &&
                 vis.VISIT_SKIP(bool, "destroyed") &&

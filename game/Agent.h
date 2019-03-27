@@ -23,7 +23,7 @@ struct Agent {
 
     Agent();
     Agent(int idx);
-    Agent(SaveData &&s) NOEXCEPT;
+    Agent(SaveData &&s, int idx=-1) NOEXCEPT;
     ~Agent();
 
     typedef int VisitEnabled;

@@ -11,6 +11,7 @@
 
 #if WIN32
 #  ifdef BUILDING_REASSEMBLY
+#    pragma warning(disable: 4251)
 #    define DLLFACE __declspec(dllexport)
 #  else
 #  define DLLFACE __declspec(dllimport)
@@ -51,13 +52,25 @@ using std::priority_queue;
 #  define CP_USE_CGPOINTS 0
 #endif
 
+#define CP_ALLOW_PRIVATE_ACCESS 1
+
 #include "../chipmunk/include/chipmunk/chipmunk.h"
 #include "../chipmunk/include/chipmunk/chipmunk_unsafe.h"
 
 #include "StdAfx_core.h"
 
-#include "Steam.h"
 static const int kSteamAppid = 329130;
+static const int kSteamAppidFieldsDLC = 1012980;
+
+
+// for GOG stat based achievement unlocking
+struct AchievementStat {
+    const char* stat;
+    int         minval;
+    const char* achievement;
+};
+
+#include "Steam.h"
 
 #ifdef POSIX
 #undef POSIX
@@ -139,6 +152,9 @@ DCCV(int2);
     F(MULTI, uint64(1)<<47)                                    \
     F(STREAMER_PROFILE, uint64(1)<<48)                         \
     F(STARS, uint64(1)<<49)                                    \
+    F(SLEEPING, uint64(1)<<50)                                 \
+    F(GOG, uint64(1)<<51)                                      \
+    F(FILE, uint64(1)<<52)                                     \
 
 
 #define TO_DBG_ENUM(X, V) DBG_##X=V,
@@ -153,8 +169,8 @@ struct LogRecorder {
     vector<string> lines;
 
     // void Report(const string &s) { lines.push_back(s); }
-    void Report(const string &s) { lines.push_back(s); }
-    void ReportLines(const string &s) { vec_extend(lines, str_split("\n", s)); }
+    void Report(string s);
+    void ReportLines(string s);
     size_t size() const { return lines.size(); }
 };
 
@@ -194,7 +210,7 @@ struct Globals {
     double    frameTime;         // seconds for the current (last) frame
     double    framesPerSecond;
     uint      swapInterval = -2;
-    int       frameStep;         // increment every frame
+    int       frameStep = 0;         // increment every frame
     int       reloadVersion = 0;
 
     float2    windowSizePixels;
@@ -222,6 +238,7 @@ struct Globals {
     vector<GLuint>          deferredTextures;
     vector<GLuint>          deferredRenderbuffers;
     std::mutex              loaderMutex;
+    int                     loaderWorkCount = 0;
     deque<Thunk>            loaderThunks;
     std::condition_variable loaderWorkAvailable;
     std::condition_variable loaderFinished;
@@ -264,29 +281,6 @@ struct Globals {
         }
     }
 
-    template <typename Vec>
-    void deleteEachInMainThread(Vec &vec)
-    {
-        if (vec.empty())
-            return;
-        if (std::this_thread::get_id() == mainThreadId) {
-            foreach (IDeletable* ptr, vec)
-                delete ptr;
-        } else {
-            foreach (IDeletable* ptr, vec) {
-                if (ptr) {
-                    ptr->onQueueForDelete();
-                }
-            }
-            std::lock_guard<std::recursive_mutex> l(deferredDeletionsMutex);
-            foreach (IDeletable* ptr, vec) {
-                if (ptr)
-                    deferredDeletions.push_back(ptr);
-            }
-        }
-        vec.clear();
-    }
-
     void callFromMainThread(const std::function<void()> &thunk)
     {
         if (std::this_thread::get_id() == mainThreadId) {
@@ -305,6 +299,7 @@ struct Globals {
             {
                 std::lock_guard<std::mutex> l(loaderMutex);
                 loaderThunks.push_back(thunk);
+                loaderWorkCount++;
             }
             loaderWorkAvailable.notify_one();
         }

@@ -31,20 +31,20 @@ private:
     bool                          m_tutorialsDirty = false;
     TutorialVec                   m_tutorials; // render thread only!
 
-    typedef pair<bool, const MapObjective*> HiPbl;
-
     enum UnlockType {
         UT_NONE = 0,
         UT_ACTIVATE,
+        UT_CAPTURE,
         UT_WORMHOLE,
     };
 
-    std::mutex                    m_mutex;
-    vector<CollectAnim>           m_collects;
-    vector<HiPbl >                m_drawPblocks;
-    vector<ShipPosition>          m_followers;
-    int                           m_unlockVisible = 0;
-    float3                        m_resHiLite;
+    std::mutex                   m_mutex;
+    vector<CollectAnim>          m_collects;
+    vector<const MapObjective *> m_drawObjectives;
+    vector<ShipPosition>         m_followers;
+    int                          m_unlockVisible = 0;
+    float3                       m_resHiLite;
+    TriMesh<VertexPos2ColorTex>  m_wormholeMesh;
 
     struct DeferredCollect {
         int    type  = 0;
@@ -78,8 +78,7 @@ public:
     void renderHUD(RenderContext& ctx);
 
     // effects
-    void renderCallback(const ShaderState &ss);
-
+    void render(const ShaderState &ss, const View &view);
 };
 
 

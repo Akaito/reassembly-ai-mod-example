@@ -10,9 +10,9 @@ struct Level;
 struct SaveSerializer;
 struct SaveParser;
 
-// basic io routines - abstract steam, save path, etc.
+extern bool kWriteJSON;
 
-bool isSteamCloudEnabled();
+// basic io routines - abstract steam, save path, etc.
 
 // write a save file - possibly to steam cloud
 bool SaveFile(const char* fname, const char* data, int size);
@@ -44,8 +44,8 @@ bool FileExists(const char* fname);
 inline bool FileExists(const string &fname) { return FileExists(fname.c_str()); }
 
 // return list of files in directory
-vector<string> ListDirectory(const char* fname);
-inline vector<string> ListDirectory(const string &fname) { return ListDirectory(fname.c_str()); }
+vector<string> ListDirectory(const char* fname, bool local_only=false);
+inline vector<string> ListDirectory(const string &fname, bool local_only=false) { return ListDirectory(fname.c_str(), local_only); }
 
 // __DATE__
 const char *getBuildDate();
@@ -104,6 +104,7 @@ struct SaveSerializer {
         EXPLICIT_CLUSTERS_ALWAYS=1<<7,
         INDEX_CLUSTERS=1<<8,
         IMPLICIT_TYPE_FIELDS=1<<9,
+        JSON=1<<10,
     };
 
 protected:
@@ -117,6 +118,8 @@ protected:
     vector<lstring>          currentClusterName;
 
 public:
+    std::unordered_set<string>   *skipFields = NULL;
+    int                           maxIndent = 9999999;
 
     void clear()
     {
@@ -199,6 +202,8 @@ public:
     {
         if (val == def)
             return false;
+        if (skipFields && skipFields->count(name))
+            return false;
         serializeField(name, val, delimit);
         return true;
     }
@@ -243,7 +248,8 @@ protected:
     template <typename T>
     void serializeList(const T &v)
     {
-        insertToken('{');
+        const char* parens = (flags&JSON) ? "[]" : "{}";
+        insertToken(parens[0]);
         bool first = true;
         bool newline = false;
         foreach (const auto &x, v)
@@ -260,7 +266,7 @@ protected:
             serialize(x);
             newline = !(flags&FORMAT_NONE) && columnWidth > 0 && (o.size() - start) > columnWidth/3;
         }
-        insertToken('}');
+        insertToken(parens[1]);
     }
 
 public:
@@ -273,8 +279,17 @@ public:
 
     static bool isIdent(const char* s);
     void serializeKey(const string& s) { serializeKey(s.c_str()); }
-    void serializeKey(const char* k)   { if (isIdent(k)) { o += k; } else { serialize(k); } }
+    void serializeKey(const char* k)   { if (isIdent(k) && !(flags&JSON)) { o += k; } else { serialize(k); } }
     template <typename T> void serializeKey(const T& k) { serialize(k); }
+
+    void comment(const string &s)
+    {
+        if (flags&JSON)
+            return;
+        o += "-- ";
+        o += s;
+        o += '\n';
+    }
     
     template <typename K, typename V>
     void serialize(const std::map<K, V> &v)
@@ -289,6 +304,13 @@ public:
             serialize(it->second);
         }
         insertToken('}');
+    }
+    
+    template <typename K, typename V>
+    void serialize(const std::unordered_map<K, V> &v)
+    {
+        const std::map<K, V> m(v.begin(), v.end());
+        serialize(m);
     }
 
     void serialize(float f);
@@ -305,20 +327,23 @@ public:
     template <typename T>
     void serialize(const glm::tvec2<T> &v)
     {
-        o += "{"; serialize(v.x); insertComma(); serialize(v.y); o += "}";
+        const char* parens = (flags&JSON) ? "[]" : "{}";
+        o += parens[0]; serialize(v.x); insertComma(); serialize(v.y); o += parens[1];
     }
 
     template <typename T>
     void serialize(const glm::tvec3<T> &v)
     {
-        o += "{"; serialize(v.x); insertComma(); serialize(v.y); insertComma(); serialize(v.z); o += "}";
+        const char* parens = (flags&JSON) ? "[]" : "{}";
+        o += parens[0]; serialize(v.x); insertComma(); serialize(v.y); insertComma(); serialize(v.z); o += parens[1];
     }
 
     template <typename T>
     void serialize(const glm::tvec4<T> &v)
     {
-        o += "{"; serialize(v.x); insertComma(); serialize(v.y); insertComma();
-                  serialize(v.z); insertComma(); serialize(v.w); o += "}";
+        const char* parens = (flags&JSON) ? "[]" : "{}";
+        o += parens[0]; serialize(v.x); insertComma(); serialize(v.y); insertComma();
+                  serialize(v.z); insertComma(); serialize(v.w); o += parens[1];
     }
 
     void serialize(const char* s);
@@ -365,12 +390,18 @@ public:
     template <typename T>
     void serializeVisitable(const T *val)
     {
-        insertToken('{');
-        if (val) {
+        const char* parens = ((flags&JSON) && visitIndex == 0) ? "[]" : "{}";
+        insertToken(parens[0]);
+        if ((flags&SUMMARIZE_PRETTY) && indent > maxIndent)
+        {
+            o += "...";
+        }
+        else if (val)
+        {
             visitIndexCount = GetVisitIndexCount<T>::value;
             const_cast<T*>(val)->accept(*this);
         }
-        insertToken('}');
+        insertToken(parens[1]);
     }
 
     template <typename T>
@@ -411,8 +442,12 @@ struct ParserLocation {
     string currentLine;
     int    currentLineColumn = -1;
     bool   isEof = false;
+    vector<string> includes;
 
     mutable LogRecorder *logger = NULL;
+
+    ParserLocation() {}
+    ParserLocation(string s) : fname(move(s)) {}
 
     string format(const char* type, const string &msg, bool first=true) const;
     string shortLoc() const;
@@ -580,6 +615,7 @@ public:
 
     void registerAbbrev(const char* name, const char* abbrev)
     {
+        DASSERT(map_contains(names, name));
         names[abbrev] = names[name];
     }
 
@@ -600,22 +636,27 @@ public:
 };
 
 
-struct SaveParser {
-
-private:
+struct SaveFileParseContext {
     string       fname;
     string       buffer;
+    const char*  data         = NULL;
     const char*  start        = NULL;
     const char*  dend         = NULL;
-    const char*  data         = NULL;
     uint         dataline     = 0;
     const char*  dataLastLine = NULL;
+};
+
+struct SaveParser : private SaveFileParseContext {
+
+private:
+    
     float*       progress     = NULL;
     mutable int  error_count  = 0;
     mutable int  warn_count   = 0;
     bool         fail_ok      = false;
     bool         cliMode      = false;
     bool         mergeMode    = false;
+    bool         skipSpaceEntrant = false;
     LogRecorder *logger       = NULL;
     // std::unordered_map<uint, const BlockCluster*> indexedClusters;
     struct CachedCluster {
@@ -625,34 +666,26 @@ private:
     unordered_map<uint, CachedCluster> indexedClusters;
     uint                               incompleteClusterHash = 0;
     vector<const BlockCluster **>      incompleteClusters;
+    vector<SaveFileParseContext>       includeStack;
 
     bool parseBinaryIntegral(uint64 *v);
     bool parseIntegral(uint64* v);
+    bool parseIntegral(long long *v);
 
     template <typename T>
     bool parseIntegral(T* v)
     {
-        skipSpace();
-        uint64 bv;
-        if (parseBinaryIntegral(&bv))
-        {
-            *v = (T) bv;
-            return true;
-        }
-        
-        char* end = 0;
-        const long long lval = strtoll(data, &end, 0);
-        if (end <= data)
+        long long lval = 0;
+        if (!parseIntegral(&lval))
             return false;
         PARSE_FAIL_UNLESS2((lval >= std::numeric_limits<T>::min() &&
-                            lval <= std::numeric_limits<T>::max()),
-                           "integral constant %lld is out of range for %s", lval, TYPE_NAME(T));
-        *v = (T) lval;
-        data = end;
+                           lval <= std::numeric_limits<T>::max()),
+                          "integral constant %lld is out of range for %s", lval, TYPE_NAME(T));
         PARSE_FAIL_UNLESS2(*data != '.', "Expecting integer, got float");
+        *v = (T) lval;
         return true;
     }
-
+    
     bool parseFieldIndex(SerialBlock *sb, uint index);
     bool parseField(SerialBlock* sb, const string& s);
     bool parseBinaryBlock(SerialBlock *sb);
@@ -772,6 +805,8 @@ private:
 
     char nextChar();
 
+    bool loadFileInclude(string fn);
+
 public:
 
     SaveParser() ;
@@ -858,8 +893,10 @@ public:
 
     bool parseToTokens(string *s, const char *token);
     bool parseToken(char token);
+    bool parseTokenOnly(const char *token);
     bool atToken(char token);
     bool parseIdent(string* s);
+    bool parseIdentAnd(string* s, char token);
     bool parseArg(string* s);
     bool parseName(string* s);
     bool parseName(lstring* s)
@@ -933,14 +970,25 @@ public:
     }
 
     template <typename T>
-    bool parse(copy_ptr<T> *ptr) { return parse(ptr->getPtr()); }
+    bool parse(copy_ptr<T> *ptr)
+    {
+        return parse(ptr->getPtr()); 
+    }
     
     template <typename T>
     bool parse(T** psb)
     {
-        DASSERT(*psb == NULL);
-        auto v = new typename std::remove_const<T>::type();
-        *psb = v;
+        typedef typename std::remove_const<T>::type U;
+        U* v = const_cast<U*>(*psb);
+        if (v)
+        {
+
+        }
+        else
+        {
+            v = new U();
+            *psb = v;
+        }
         return parse(v);
     }
 
@@ -1044,11 +1092,11 @@ private:
         ParsePrepare<T>().prepare(*this, *sb);
         
         int i=0;
+        std::string s;
+        
         while (!parseToken(terminator))
         {
-            std::string s;
-
-            if (parseIdent(&s) && parseToken('=')) {
+            if (parseIdentAnd(&s, '=')) {
                 PARSE_FAIL_UNLESS(parseField(sb, s), "while parsing %s::%s", PRETTY_TYPE(T), s.c_str());
                 i = -1;
             } else if (i == -1) {
@@ -1260,6 +1308,8 @@ string serializeForExport(const T& val)
 {
     SaveSerializer ss;
     ss.setFlag(SaveSerializer::EXPLICIT_CLUSTERS_ALWAYS);
+    if (kWriteJSON)
+        ss.setFlag(SaveSerializer::JSON);
     ss.serialize(val);
     return ss.str();
 }
@@ -1278,38 +1328,60 @@ protected:
 
     bool initialize();
 
-    template <typename T, typename U>
+    template <typename T>
     bool parseValueOr1(SaveParser &sp, SerialEnum<T> *val)
     {
         SerialEnum<T> val1;
-        if (sp.parse(&val1)) {
-            *val |= val1;
-            ReportEarlyf("CVAR %s = %s (via |=)", getName().c_str(), toString().c_str());
-            return true;
-        }
-        return false;
+        if (!sp.parse(&val1))
+            return false;
+        *val |= val1;
+        ReportEarlyf("CVAR %s = %s (via |=)", getName().c_str(), toString().c_str());
+        return true;
     }
 
     template <typename T>
-    bool parseValueOr1(SaveParser &sp, const T& val) { return false; }
+    bool parseValueOr1(SaveParser &sp, T *val) { return false; }
 
     template <typename T>
     bool parseValueAndNot1(SaveParser &sp, SerialEnum<T> *val)
     {
         SerialEnum<T> val1;
-        if (sp.parse(&val1)) {
-            *val &= ~val1;
-            ReportEarlyf("CVAR %s = %s (via &~)", getName().c_str(), toString().c_str());
-            return true;
-        }
-        return false;
+        if (!sp.parse(&val1))
+            return false;
+        *val &= ~val1;
+        ReportEarlyf("CVAR %s = %s (via &~)", getName().c_str(), toString().c_str());
+        return true;
     }
 
     template <typename T>
-    bool parseValueAndNot1(SaveParser &sp, const T& val) { return false; }
+    bool parseValueAndNot1(SaveParser &sp, const T *val) { return false; }
+
+    template <typename T>
+    bool parseValuePlus2(SaveParser &sp, T *v)
+    {
+        T q{};
+        if (!sp.parse(&q))
+            return false;
+        *v += q;
+        ReportEarlyf("CVAR %s = %s (via +=)", getName().c_str(), toString().c_str());
+        return true;
+    }
+
+    bool parseValuePlus1(SaveParser &sp, float *v) { return parseValuePlus2(sp, v); }
+    bool parseValuePlus1(SaveParser &sp, int *v) { return parseValuePlus2(sp, v); }
+    template <typename T>
+    bool parseValuePlus1(SaveParser &sp, glm::tvec2<T> *v) { return parseValuePlus2(sp, v); }
+    template <typename T>
+    bool parseValuePlus1(SaveParser &sp, glm::tvec3<T> *v) { return parseValuePlus2(sp, v); }
+    template <typename T>
+    bool parseValuePlus1(SaveParser &sp, glm::tvec4<T> *v) { return parseValuePlus2(sp, v); }
+    
+    template <typename T>
+    bool parseValuePlus1(SaveParser &sp, const T *val) { return false; }
 
     virtual bool parseValue(SaveParser &sp) = 0;
     virtual bool parseValueOr(SaveParser &sp) = 0;
+    virtual bool parseValuePlus(SaveParser &sp) = 0;
     virtual bool parseValueAndNot(SaveParser &sp) = 0;
 
 public:
@@ -1331,6 +1403,7 @@ public:
     static bool        writeToFile();
     static std::string getAll();
     static vector<std::string> getAllNames();
+    static void        deleteCVars();
 };
 
 
@@ -1382,15 +1455,9 @@ struct CVar final : public CVarBase {
         return false;
     }
 
-    virtual bool parseValueOr(SaveParser &sp)
-    {
-        return parseValueOr1(sp, m_vptr);
-    }
-
-    virtual bool parseValueAndNot(SaveParser &sp)
-    {
-        return parseValueAndNot1(sp, m_vptr);
-    }
+    virtual bool parseValueOr(SaveParser &sp) { return parseValueOr1(sp, m_vptr); }
+    virtual bool parseValuePlus(SaveParser &sp) { return parseValuePlus1(sp, m_vptr); }
+    virtual bool parseValueAndNot(SaveParser &sp) { return parseValueAndNot1(sp, m_vptr); }
     
     virtual std::string toString() const
     {
@@ -1461,5 +1528,7 @@ string cmd_save_cvars(void* data, const char* name, const char *args);
 
 typedef SaveSerializer SSerializer;
 typedef SaveParser SParser;
+
+bool isParsableFileExt(const string &path);
 
 #endif

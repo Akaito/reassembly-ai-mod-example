@@ -58,8 +58,34 @@ typedef int    Faction_t; // negative faction used in patterns, etc.
 typedef uint   AI_t;      // AI mod id
 typedef uint   BlockId_t;
 
+enum BindingType {
+    BT_NONE = 0,
+    BT_WEAPON = 1,
+    BT_UTILITY = 2,
+};
+
+enum FireGroup {
+    FG_PRIMARY=0,
+    FG_SECONDARY,
+    FG_TERTIARY,
+    FG_AUTO,
+    FG_DEFENSE,
+    FG_UTILITY0,
+    FG_UTILITY1,
+    FG_UTILITY2,
+    FG_COUNT,
+    FG_DEFAULT,
+    FG_NONE,
+};
+
+inline BindingType getBindingType(FireGroup fg)
+{
+    return (fg < FG_UTILITY0) ? BT_WEAPON :
+        (fg < FG_COUNT) ? BT_UTILITY : BT_NONE;
+}
 
 enum LoadStatus {
+    LS_UNKNOWN = -2,
     LS_ERROR = -1,
     LS_MISSING = 0,
     LS_OK = 1,

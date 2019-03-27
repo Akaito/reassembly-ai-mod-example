@@ -38,6 +38,10 @@ extern "C"
 #define NOINLINE
 #endif
 #endif
+    
+#ifndef DLLFACE
+#define DLLFACE
+#endif
 
 /////////////////////////////// Toggles ///////////////////////////////////////////////
 
@@ -79,7 +83,7 @@ void OLG_OnQuit(void);
 // called when an unhandled exception is caught and game is about to crash
 // also called by OL_Terminate. May be called several times
 // return 1 if we should continue handling, or 0 to abort (i.e. a crash is already in progress)
-int OLG_OnTerminate(void);
+int OLG_OnTerminate(const char* message);
 
 // called when the application window is closed
 // game should clean up and call OLG_DoQuit()
@@ -143,9 +147,13 @@ void OL_ReportMessage(const char *str);
 
 // return 1 if log has already been opened
 int OL_IsLogOpen(void);
+void OL_OpenLog(void);
 
 // time since start of game in seconds
 double OL_GetCurrentTime(void);
+
+// Sleep
+void OL_Sleep(double seconds);
 
 // get logged in username
 const char* OL_GetUserName(void);
@@ -155,6 +163,8 @@ const char* OL_GetPlatformDateInfo(void);
 
 // open default web browser to selected url
 int OL_OpenWebBrowser(const char* url);
+
+int OL_OpenFolder(const char* url);
 
 // quit gracefully, return 1 if already trying to quit
 int OL_DoQuit(void);

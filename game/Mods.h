@@ -5,10 +5,6 @@
 #include "SerialBlock.h"
 #include "Steam.h"
 
-static const int kModBlockReloc0Max = 200;
-static const int kModBlockReloc1Min = 17000;
-static const int kModBlockReloc1Max = 26000;
-
 static const int kModFactionRelocMin = 20;
 static const int kModFactionRelocMax = 100;
 
@@ -61,6 +57,7 @@ const FactionData *saveSlotToMod(const SaveData &save, int slot, bool newblocks)
 struct ModEntry {
     string            name;     // name of folder OR title for workshop
     bool              enabled = true;
+    bool              load_dlls = false;  // each mod must be approved to run user-submitted code
     EModType          type;
     PublishedFileId_t steam_pfid = 0;
 
@@ -70,6 +67,7 @@ struct ModEntry {
     {
         return vis.VISIT(name) &&
             vis.VISIT_DEF(enabled, true) &&
+            vis.VISIT(load_dlls) &&
             vis.VISIT(type) &&
             vis.VISIT(steam_pfid);
     }
@@ -94,11 +92,13 @@ struct OneMod : public ModEntry {
     string               error;
     copy_ptr<LogRecorder> loadLog;
     
-    mutable EModStatus           status;
-    mutable string               currentSource;
-    mutable std::set<Faction_t>  factions;
-    mutable std::set<lstring>    ships;
-    mutable std::set<BlockId_t>  blocks;
+    mutable EModStatus          status;
+    mutable string              currentSource;
+    mutable std::set<Faction_t> factions;
+    mutable std::set<lstring>   ships;
+    mutable std::map<BlockId_t, BlockId_t> blocks;
+    mutable int                 blockSort = 0;
+    mutable bool                has_dll = false;
 
 #if HAS_STEAM
     UGCUpdateHandle_t    update        = 0;
@@ -131,38 +131,23 @@ struct OneMod : public ModEntry {
 
     static string getFolder(const OneMod *mod) { return mod->folder; }
 
-    uint relocateId(uint ident) const;
-    uint unrelocateId(uint ident) const;
-
-    BlockId_t relocateBlockId(BlockId_t bid) const
-    {
-        if (!relocId)
-            return bid;
-        if ((0 < bid && bid < kModBlockReloc0Max) ||
-            (kModBlockReloc1Min <= bid && bid < kModBlockReloc1Max))
-        {
-            if (kModBlockReloc1Min <= bid && bid < kModBlockReloc1Max)
-                bid = bid - kModBlockReloc1Min + kModBlockReloc0Max;
-            return relocateId(bid);
-        }
-        return bid;
-    }
-
-    BlockId_t unrelocateBlockId(BlockId_t bid) const
-    {
-        if (bid < kModRelocBase || !relocId)
-            return bid;
-        bid = unrelocateId(bid);
-        if (bid > kModBlockReloc0Max)
-            bid += kModBlockReloc1Min - kModBlockReloc0Max;
-        return bid;
-    }
+    BlockId_t relocateId(BlockId_t ident) const;
+    BlockId_t unrelocateId(BlockId_t ident) const;
+    BlockId_t relocateBlockId(BlockId_t bid) const;
+    BlockId_t unrelocateBlockId(BlockId_t bid) const;
 
     Faction_t relocateFaction(Faction_t fac) const
     {
         if (kModFactionRelocMin <= fac && fac < kModFactionRelocMax)
             return relocateId(fac);
         return fac;
+    }
+
+    uint relocateShape(uint sid) const
+    {
+        if (SHAPE_RESERVED_LAST < sid && sid < kModRelocRange)
+            return relocateId(sid);
+        return sid;
     }
 
 };
@@ -200,9 +185,14 @@ public:
     bool anyReplace(EModReplace stats) const;
     OneMod *getByReloc(uint reloc);
 
+    const OneMod *getFromBlockId(BlockId_t ident) const;
+    const OneMod *getFromFactionId(Faction_t ident) const;
+
     int loadMods(int reload, float *progress);
     void loadModEntry(const ModEntry &en);
     void loadModCVars();
+
+    void pushConfirmDllsGUI(GameState *gs);
 
     bool writeIndex();
 
@@ -220,9 +210,9 @@ struct GameState;
 GameState *CreateGSMods(GameState *mm);
 
 #define DPRINT_MOD(M, X) { \
-        const string msg_ = str_format X; \
+        string msg_ = str_format X;         \
         DPRINT(MODS, ("%s", msg_.c_str())); \
-        if (M) { (M)->loadLog->Report(msg_); }}
+        if (M) { (M)->loadLog->Report(move(msg_)); }}
 
 template <typename T>
 LoadStatus loadFileAndParseMod(const string& fname, T* data, const OneMod *mod, SaveParser &p)
@@ -242,7 +232,7 @@ LoadStatus loadFileAndParseMod(const string& fname, T* data, const OneMod *mod)
     return loadFileAndParseMod(fname, data, mod, p);
 }
 
-LoadStatus loadAiMod(const string& base, const string& ainame, FactionData* data, const OneMod *mod);
+LoadStatus loadAiMod(FactionData* data);
 
 
 #endif // THE_MODS_H

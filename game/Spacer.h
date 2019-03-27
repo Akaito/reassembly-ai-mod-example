@@ -34,7 +34,13 @@ enum CollisionType {
     COLLISION_GHOST,
 };
 
-struct Body : public IDeletable {
+enum IntegrateTypes {
+    INT_DEFAULT = 0,
+    INT_PROJECTILE = 1,
+    INT_EDGE = 2,
+};
+
+struct DLLFACE Body : public IDeletable {
     
     GameZone*      zone = NULL;
 
@@ -100,17 +106,22 @@ struct SpacerShape {
     float           lastInvalidateTime = -1000.f;
     bool            dirty   = true;
     vector<cpVect>  vertices;
-    cpShape        *shape   = NULL;
+    cpPolyShape     shape;
     BlockCluster   *cluster = NULL;
 
+    SpacerShape();
     ~SpacerShape();
     static SpacerShape* fromShape(cpShape* shape);
 
+    cpShape *getShape() { return &shape.shape; }
+
     bool isValid() const;
-    bool isEnabled() const { return shape && cpShapeGetSpace(shape); }
+    bool isEnabled() const { return shape.shape.space; }
     void invalidate();
     void invalidateNow();       // expensive!
     bool queryValid();
+
+    void setupShape(cpShape *shp);
 
     size_t getSizeof() const;
     Feature_t getFeatureUnion() const;

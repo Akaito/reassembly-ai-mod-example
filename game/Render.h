@@ -14,7 +14,7 @@ extern template struct MeshPair<VertexPos2ColorTime, VertexPosColor>;
 extern template struct MeshPair<VertexPosColorLuma, VertexPosColor>;
 
 struct IRenderable {
-    virtual void renderCallback(const ShaderState &ss)=0;
+    virtual void render(const ShaderState &ss, const View &view)=0;
     virtual ~IRenderable() {}
 };
 
@@ -48,5 +48,12 @@ IBackground* CreateWorleyBackground(const GameZone* zone);
 
 bool reloadShaders();
 void clearRenderCaches();
+
+struct MapObjective;
+void renderOrbit(DMesh &mp, uint color, const View &view, const BlockCluster *cl, const MapObjective &mo);
+
+void renderGravityField(LineMesh<VertexPosColor> &line, float2 opos, float orad, int detail);
+void renderSlowZone(LineMesh<VertexPosColor> &line, float2 opos, float orad, int detail);
+void renderField(const MapObjective *pbl, const ShaderState &ss, const View &view);
 
 #endif // RENDER_H

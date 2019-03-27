@@ -47,7 +47,9 @@ private:
     Callback_t                      callback = NULL;
     void*                           callback_data = NULL;
 
-    bool                            steam_auth_ready = false;
+    bool                            use_steam_auth = false;
+    int                             auth_state = 0;
+    bool                            use_gog_auth = false;
 
     Network();
     ~Network();
@@ -60,6 +62,7 @@ private:
     static const char* getOperationStr(Operation op);
 
     bool begin(Operation op);
+    void waitForAuth();
 
     STEAM_CALLBACK_NAMED(Network, GetAuthSessionTicketResponse);
 
@@ -75,6 +78,9 @@ public:
     bool isBusy() const { return operation != NONE; }
     bool isWaiting() const { return waiting; }
     float getProgress() const { return progress; }
+    bool isSteamAuth() const { return use_steam_auth || use_gog_auth; }
+
+    void setAuthReady(int res);
     
     const char* getOutput() const; // return immediately, NULL if not ready
     bool waitForOperation() const; // return true on success
@@ -88,7 +94,7 @@ public:
     bool downloadFriends();
     bool sessionHello();
     bool login(const string& username, const string& password);
-    
+
     static Network &instance()
     {
         static Network *n = new Network();

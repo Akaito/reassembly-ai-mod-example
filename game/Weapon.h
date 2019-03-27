@@ -1,6 +1,5 @@
 
-#ifndef CANNON_H
-#define CANNON_H
+#pragma once
 
 #include "Blocks.h"
 
@@ -12,33 +11,46 @@ inline float boost_val(float v, const float2 &b, float t)
         return v + max(b.y, b.x * t);
 }
 
-#define BOOST_VAL(T, S, X) (T->sb.boost ? boost_val((S).X, T->sb.boost->X, T->chargeTime) : (S).X)
+#define BOOST_VAL(T, S, X) ((T && T->sb.bt->boost) ? boost_val((S).X, T->sb.bt->boost->X, T->chargeTime) : (S).X)
 
+
+extern bool kProjectileQueryOptimization;
 struct SoundEvent;
+
+bool spawn_fragment(Projectile *base, const SerialCannon &sc, float2 pos, float angle,
+                    float2 vel, float boost, uint faction, GameZone *zone);
 
 struct Projectile final : public Body {
 
-    cpShape*         shape;
+    union {
+        cpShape        shape;
+        cpCircleShape  circle_shape;
+        cpSegmentShape seg_shape;
+    };
+    
     watch_ptr<Block> origin;
-    Faction_t        faction;
     EExplosive       explosive;
-    fixed16_u4       explodeRadius;
-    fixed8_u4        size;
+    float            explodeRadius;
+    float            size;
     float            endTime;
     float            health;
     uint             color;
+    float            chargeBoost = 1.f;
+    const SerialCannon *fragment = NULL;
 
-    Projectile(Block* origin, const SerialCannon& sc, float charge);
+    Projectile();
+    void init(const SerialCannon& sc, float charge);
 
     void setPosAngle(float2 pos, float angle);
     
     cpBody* getBody() { return &body; }
+    Faction_t getFaction() const { return shape.group2; }
 
     // return true if collision physics should be simulated
     bool collide(float2 p, Block *bl);
     bool collideShield(float2 p, Block *bl);
 
-    bool updateIsDead(GameZone *zone) const;
+    bool updateIsDead(GameZone *zone);
 
     static float getSize(const SerialCannon& sc, float charge);
     static Projectile* fromShape(cpShape* shape);
@@ -46,33 +58,34 @@ struct Projectile final : public Body {
 
     void removeFromGameZone();
 
-    ~Projectile()
-    {
-        removeFromGameZone();
-    }
+    ~Projectile();
 
     string toString() const;
+
+    // static void pool_purge();
+    // static Projectile *pool_alloc();
+    static void pool_free(Projectile *pr) { delete pr; }
 };
 
 struct CannonBlock {
 
-    fixed8_u2 turretRadius = 0.f;
-    uchar  turretBarrelCount = 1;
+    float turretRadius      = 0.f;
+    uchar turretBarrelCount = 1;
 
 private:
 
-    uchar  turretShotIndex = 0;
+    uchar turretShotIndex = 0;
 
     uchar shotInBurst = 0;
     float lastShotTime = 0.f;
     float nextShotTime = 0.f;
 
-    ushort totalDeadliness = 0;
+    uint totalDeadliness = 0;
 
     Block*                 thisBlock = NULL;
     watch_ptr<const Block> lastBlock; // last block in the boost chain
 
-    void addBooster(Block* b, uint queryVal);
+    void addBooster(Block* bl);
     void resetMuzzleOffset();
 
 public:
@@ -91,12 +104,10 @@ public:
     float2 getBarrelOffset() const;
     float  getProjectileSize() const;
     int    getDeadliness() const { return totalDeadliness; }
-    bool   isBoosted() const { return thisBlock != lastBlock.get(); }
 
     void onClusterInit();
 
     void update(float cannonAngle, float chargeBoost);
-    void render(VertexPusherTri *tri, VertexPusherLine *line);
 };
 
 struct Laser {
@@ -129,12 +140,3 @@ struct Explosion {
     void update();
 };
 
-struct Turret {
-    float                  angle       = 0.f;
-    RenderAngle            renderAngle;
-    float                  targetAngle = 0.f;
-    float                  spreadAngle = 0.f;
-};
-
-
-#endif
